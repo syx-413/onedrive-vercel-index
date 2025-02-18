@@ -16,7 +16,7 @@
     "@fortawesome/free-regular-svg-icons": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
-    "@headlessui/react": "^1.7.8",
+    "@headlessui/react": "^1.7.19",
     "@tailwindcss/line-clamp": "^0.4.2",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
