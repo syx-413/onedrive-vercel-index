@@ -178,8 +178,8 @@ importers:
         specifier: 13.5.8
         version: 13.5.8(eslint@9.20.1(jiti@1.21.7))(typescript@5.7.3)
       eslint-config-prettier:
-        specifier: ^8.6.0
-        version: 8.10.0(eslint@9.20.1(jiti@1.21.7))
+        specifier: ^10.0.0
+        version: 10.0.1(eslint@9.20.1(jiti@1.21.7))
       i18next-parser:
         specifier: ^9.0.0
         version: 9.2.0
@@ -1315,8 +1315,8 @@ packages:
       typescript:
         optional: true
 
-  eslint-config-prettier@8.10.0:
-    resolution: {integrity: sha512-SM8AMJdeQqRYT9O9zguiruQZaN7+z+E4eAP9oiLNGKMtomwaB1E9dcgUD6ZAn/eQAb52USbvezbiljfZUhbJcg==}
+  eslint-config-prettier@10.0.1:
+    resolution: {integrity: sha512-lZBts941cyJyeaooiKxAtzoPHTN+GbQTJFAIdQbRhA4/8whaAraEh47Whw/ZFfrjNSnlAxqfm9i0XVAEkULjCw==}
     hasBin: true
     peerDependencies:
       eslint: '>=7.0.0'
@@ -4374,7 +4374,7 @@ snapshots:
       - eslint-plugin-import-x
       - supports-color
 
-  eslint-config-prettier@8.10.0(eslint@9.20.1(jiti@1.21.7)):
+  eslint-config-prettier@10.0.1(eslint@9.20.1(jiti@1.21.7)):
     dependencies:
       eslint: 9.20.1(jiti@1.21.7)
 
