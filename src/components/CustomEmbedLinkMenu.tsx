@@ -19,7 +19,7 @@ function LinkContainer({ title, value }: { title: string; value: string }) {
         <div className="opacity-80">{value}</div>
         <button
           onClick={() => clipboard.copy(value)}
-          className="absolute top-[0.2rem] right-[0.2rem] w-8 rounded border border-gray-400/40 bg-gray-100 py-1.5 opacity-0 transition-all duration-100 hover:bg-gray-200 group-hover:opacity-100 dark:bg-gray-850 dark:hover:bg-gray-700"
+          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg border border-gray-200/50 bg-white/80 p-1.5 opacity-0 transition-all group-hover:opacity-100 hover:bg-gray-100 dark:border-gray-700/50 dark:bg-gray-800/80 dark:hover:bg-gray-700/80"
         >
           {clipboard.copied ? <FontAwesomeIcon icon="check" /> : <FontAwesomeIcon icon="copy" />}
         </button>
@@ -51,7 +51,8 @@ export default function CustomEmbedLinkMenu({
 
   return (
     <Transition appear show={menuOpen} as={Fragment}>
-      <Dialog as="div" className="fixed inset-0 z-10 overflow-y-auto" onClose={closeMenu} initialFocus={focusInputRef}>
+      {/* <Dialog as="div" className="fixed inset-0 z-10 overflow-y-auto" onClose={closeMenu} initialFocus={focusInputRef}> */}
+      <Dialog as="div" className="fixed inset-0 z-[200] overflow-y-auto" onClose={closeMenu} initialFocus={focusInputRef}>
         <div className="min-h-screen px-4 text-center">
           <TransitionChild
             as={Fragment}
@@ -79,7 +80,6 @@ export default function CustomEmbedLinkMenu({
             leaveTo="opacity-0 scale-95"
           >
             <DialogPanel className="inline-block max-h-[80vh] w-full max-w-3xl transform overflow-hidden overflow-y-scroll rounded border border-gray-400/30 bg-white p-4 text-left align-middle text-sm shadow-xl transition-all dark:bg-gray-900 dark:text-white">
-            {/* <div className="inline-block max-h-[80vh] w-full max-w-3xl transform overflow-hidden overflow-y-scroll rounded border border-gray-400/30 bg-white p-4 text-left align-middle text-sm shadow-xl transition-all dark:bg-gray-900 dark:text-white"> */}
               <Dialog.Title as="h3" className="py-2 text-xl font-bold">
                 {t('Customise direct link')}
               </Dialog.Title>
