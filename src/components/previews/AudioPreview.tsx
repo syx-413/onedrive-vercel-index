@@ -1,7 +1,9 @@
 import type { OdFileObject } from '../../types'
 import { FC, useEffect, useRef, useState } from 'react'
 
-import ReactAudioPlayer from 'react-audio-player'
+// import ReactAudioPlayer from 'react-audio-player'
+import AudioPlayer from 'react-h5-audio-player';
+import 'react-h5-audio-player/lib/styles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useTranslation } from 'next-i18next'
 import { useRouter } from 'next/router'
@@ -24,7 +26,7 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
   const { asPath } = useRouter()
   const hashedToken = getStoredToken(asPath)
 
-  const rapRef = useRef<ReactAudioPlayer>(null)
+  const rapRef = useRef<AudioPlayer>(null)
   const [playerStatus, setPlayerStatus] = useState(PlayerState.Loading)
   const [playerVolume, setPlayerVolume] = useState(1)
 
@@ -36,7 +38,7 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
     // Manually get the HTML audio element and set onplaying event.
     // - As the default event callbacks provided by the React component does not guarantee playing state to be set
     // - properly when the user seeks through the timeline or the audio is buffered.
-    const rap = rapRef.current?.audioEl.current
+    const rap = rapRef.current?.audio.current
     if (rap) {
       rap.oncanplay = () => setPlayerStatus(PlayerState.Ready)
       rap.onended = () => setPlayerStatus(PlayerState.Paused)
@@ -94,13 +96,16 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
               </div>
             </div>
 
-            <ReactAudioPlayer
+            <AudioPlayer
               className="h-11 w-full"
               src={`/api/raw/?path=${asPath}${hashedToken ? `&odpt=${hashedToken}` : ''}`}
               ref={rapRef}
-              controls
+              autoPlayAfterSrcChange={true}
+              showSkipControls={true}
+              showJumpControls={false}
+              // controls
               preload="auto"
-              volume={playerVolume}
+              // volume={playerVolume}
             />
           </div>
         </div>
