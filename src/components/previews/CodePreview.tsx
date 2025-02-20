@@ -3,8 +3,8 @@ import { useTranslation } from 'next-i18next'
 import useSystemTheme from 'react-use-system-theme'
 import { useRouter } from 'next/router'
 
-import { LightAsync as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { xcode, github } from 'react-syntax-highlighter/dist/cjs/styles/hljs'
+import { PrismAsyncLight as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { prism, oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 
 import useFileContent from '../../utils/fetchOnMount'
 import { getLanguageByFileName } from '../../utils/getPreviewType'
@@ -12,6 +12,7 @@ import FourOhFour from '../FourOhFour'
 import Loading from '../Loading'
 import DownloadButtonGroup from '../DownloadBtnGtoup'
 import { DownloadBtnContainer, PreviewContainer } from './Containers'
+
 
 const CodePreview: FC<{ file: any }> = ({ file }) => {
   const { asPath } = useRouter()
@@ -45,7 +46,9 @@ const CodePreview: FC<{ file: any }> = ({ file }) => {
       <PreviewContainer>
         <SyntaxHighlighter
           language={getLanguageByFileName(file.name)}
-          style={theme === 'light' ? xcode : github}
+          style={theme === 'light' ? oneDark : prism}
+          showLineNumbers={true}
+          wrapLines={true}
         >
           {content}
         </SyntaxHighlighter>

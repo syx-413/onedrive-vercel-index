@@ -5,8 +5,9 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import rehypeRaw from 'rehype-raw'
 import { useTranslation } from 'next-i18next'
-import { LightAsync as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { xcode } from 'react-syntax-highlighter/dist/cjs/styles/hljs'
+import useSystemTheme from 'react-use-system-theme'
+import { PrismAsyncLight as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { prism, oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 
 import 'katex/dist/katex.min.css'
 
@@ -21,6 +22,7 @@ const MarkdownPreview: FC<{
   path: string
   standalone?: boolean
 }> = ({ file, path, standalone = true }) => {
+  const theme = useSystemTheme('dark')
   // The parent folder of the markdown file, which is also the relative image folder
   const parentPath = standalone ? path.substring(0, path.lastIndexOf('/')) : path
 
@@ -80,7 +82,14 @@ const MarkdownPreview: FC<{
 
       const match = /language-(\w+)/.exec(className || '')
       return (
-        <SyntaxHighlighter language={match ? match[1] : 'language-text'} style={xcode} PreTag="div" {...props}>
+        <SyntaxHighlighter 
+          language={match ? match[1] : 'text'} 
+          style={theme === 'dark' ? oneDark : prism} 
+          PreTag="div" 
+          showLineNumbers={true}
+          wrapLines={true}
+          {...props}
+        >
           {String(children).replace(/\n$/, '')}
         </SyntaxHighlighter>
       )
