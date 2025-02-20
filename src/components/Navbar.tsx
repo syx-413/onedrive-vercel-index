@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IconName } from '@fortawesome/fontawesome-svg-core'
-import { Dialog,  Transition } from '@headlessui/react'
+// import { Dialog,  Transition } from '@headlessui/react'
+import { Dialog, DialogBackdrop, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
 
 
 
@@ -134,7 +135,7 @@ const Navbar = () => {
       <Transition appear show={isOpen} as={Fragment}>
         <Dialog as="div" className="fixed inset-0 z-10 overflow-y-auto" open={isOpen} onClose={() => setIsOpen(false)}>
           <div className="min-h-screen px-4 text-center">
-            <Transition.Child
+            <TransitionChild
               as={Fragment}
               enter="ease-out duration-100"
               enterFrom="opacity-0"
@@ -143,15 +144,14 @@ const Navbar = () => {
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
- 
-              <Dialog.Overlay className="fixed inset-0 bg-gray-50 dark:bg-gray-800" />
-            </Transition.Child>
+              <DialogBackdrop className="fixed inset-0 bg-black/20 backdrop-blur-sm" />
+            </TransitionChild>
 
             {/* This element is to trick the browser into centering the modal contents. */}
             <span className="inline-block h-screen align-middle" aria-hidden="true">
               &#8203;
             </span>
-            <Transition.Child
+            <TransitionChild
               as={Fragment}
               enter="ease-out duration-100"
               enterFrom="opacity-0 scale-95"
@@ -160,7 +160,8 @@ const Navbar = () => {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <div className="my-8 inline-block w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle transition-all dark:bg-gray-900">
+              {/* <div className="my-8 inline-block w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle transition-all dark:bg-gray-900"> */}
+              <DialogPanel className="relative z-[160] inline-block w-full max-w-md overflow-hidden rounded-2xl bg-white/80 shadow-lg transition-all dark:bg-gray-900/80">
                 <Dialog.Title className="text-lg font-bold text-gray-900 dark:text-gray-100">
                   {t('Clear all tokens?')}
                 </Dialog.Title>
@@ -195,8 +196,8 @@ const Navbar = () => {
                     <span>{t('Clear all')}</span>
                   </button>
                 </div>
-              </div>
-            </Transition.Child>
+                </DialogPanel>
+            </TransitionChild>
           </div>
         </Dialog>
       </Transition>
