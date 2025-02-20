@@ -97,7 +97,7 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
             </div>
 
             <AudioPlayer
-              className="h-11 w-full"
+              className="h-20 w-full"
               src={`/api/raw/?path=${asPath}${hashedToken ? `&odpt=${hashedToken}` : ''}`}
               ref={rapRef}
               customProgressBarSection={[
