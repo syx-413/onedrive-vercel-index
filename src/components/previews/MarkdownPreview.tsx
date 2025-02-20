@@ -6,7 +6,7 @@ import rehypeKatex from 'rehype-katex'
 import rehypeRaw from 'rehype-raw'
 import { useTranslation } from 'next-i18next'
 import { LightAsync as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { tomorrowNight } from 'react-syntax-highlighter/dist/cjs/styles/hljs'
+import { xcode } from 'react-syntax-highlighter/dist/cjs/styles/hljs'
 
 import 'katex/dist/katex.min.css'
 
@@ -80,7 +80,7 @@ const MarkdownPreview: FC<{
 
       const match = /language-(\w+)/.exec(className || '')
       return (
-        <SyntaxHighlighter language={match ? match[1] : 'language-text'} style={tomorrowNight} PreTag="div" {...props}>
+        <SyntaxHighlighter language={match ? match[1] : 'language-text'} style={xcode} PreTag="div" {...props}>
           {String(children).replace(/\n$/, '')}
         </SyntaxHighlighter>
       )
