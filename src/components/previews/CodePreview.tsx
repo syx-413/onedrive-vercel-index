@@ -17,7 +17,7 @@ const CodePreview: FC<{ file: any }> = ({ file }) => {
   const { asPath } = useRouter()
   const { response: content, error, validating } = useFileContent(`/api/raw/?path=${asPath}`, asPath)
 
-  const theme = useSystemTheme('dark')
+  const theme = useSystemTheme('light', 'dark')
   const { t } = useTranslation()
 
   if (error) {
@@ -45,7 +45,7 @@ const CodePreview: FC<{ file: any }> = ({ file }) => {
       <PreviewContainer>
         <SyntaxHighlighter
           language={getLanguageByFileName(file.name)}
-          style={theme === 'dark' ? xcode : github}
+          style={theme === 'light' ? xcode : github}
         >
           {content}
         </SyntaxHighlighter>
