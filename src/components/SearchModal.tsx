@@ -9,7 +9,7 @@ import { useTranslation } from 'next-i18next'
 import Link from 'next/link'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 // import { Dialog, Transition } from '@headlessui/react'
-import { Dialog, DialogPanel, DialogBackdrop, Transition, TransitionChild } from '@headlessui/react'
+import { DialogTitle,Dialog, DialogPanel, DialogBackdrop, Transition, TransitionChild } from '@headlessui/react'
 import type { OdDriveItem, OdSearchResult } from '../types'
 import { LoadingIcon } from './Loading'
 
@@ -213,7 +213,7 @@ export default function SearchModal({
           >
             {/* <div className="my-12 inline-block w-full max-w-3xl transform overflow-hidden rounded border border-gray-400/30 text-left shadow-xl transition-all"> */}
             <DialogPanel className="my-8 inline-block w-full max-w-3xl transform space-y-4">
-              <Dialog.Title
+              <DialogTitle
                 as="h3"
                 className="flex items-center space-x-4 border-b border-gray-400/30 bg-gray-50 p-4 dark:bg-gray-800 dark:text-white"
               >
@@ -227,7 +227,7 @@ export default function SearchModal({
                   onChange={e => setQuery(e.target.value)}
                 />
                 <div className="rounded-lg bg-gray-200 px-2 py-1 text-xs font-medium dark:bg-gray-700">ESC</div>
-              </Dialog.Title>
+              </DialogTitle>
               <div
                 className="max-h-[80vh] overflow-x-hidden overflow-y-scroll bg-white dark:bg-gray-900 dark:text-white"
                 onClick={closeSearchBox}

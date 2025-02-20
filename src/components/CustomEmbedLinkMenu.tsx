@@ -1,6 +1,6 @@
 import { Dispatch, Fragment, SetStateAction, useRef, useState } from 'react'
 import { useTranslation } from 'next-i18next'
-import { Dialog, DialogBackdrop, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
+import { Description,DialogTitle, Dialog, DialogBackdrop, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
 
 // import { Dialog, Transition } from '@headlessui/react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -80,10 +80,10 @@ export default function CustomEmbedLinkMenu({
             leaveTo="opacity-0 scale-95"
           >
             <DialogPanel className="inline-block max-h-[80vh] w-full max-w-3xl transform overflow-hidden overflow-y-scroll rounded border border-gray-400/30 bg-white p-4 text-left align-middle text-sm shadow-xl transition-all dark:bg-gray-900 dark:text-white">
-              <Dialog.Title as="h3" className="py-2 text-xl font-bold">
+              <DialogTitle as="h3" className="py-2 text-xl font-bold">
                 {t('Customise direct link')}
-              </Dialog.Title>
-              <Dialog.Description as="p" className="py-2 opacity-80">
+              </DialogTitle>
+              <Description as="p" className="py-2 opacity-80">
                 <>
                   {t('Change the raw file direct link to a URL ending with the extension of the file.')}{' '}
                   <a
@@ -95,7 +95,7 @@ export default function CustomEmbedLinkMenu({
                     {t('What is this?')}
                   </a>
                 </>
-              </Dialog.Description>
+              </Description>
 
               <div className="mt-4">
                 <h4 className="py-2 text-xs font-medium uppercase tracking-wider">{t('Filename')}</h4>

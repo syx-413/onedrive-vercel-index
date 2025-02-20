@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IconName } from '@fortawesome/fontawesome-svg-core'
 // import { Dialog,  Transition } from '@headlessui/react'
-import { Dialog, DialogBackdrop, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
+import { DialogTitle,Dialog, DialogBackdrop, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
 
 
 
@@ -162,9 +162,9 @@ const Navbar = () => {
             >
               {/* <div className="my-8 inline-block w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle transition-all dark:bg-gray-900"> */}
               <DialogPanel className="relative z-[160] inline-block w-full max-w-md overflow-hidden rounded-2xl bg-white/80 shadow-lg transition-all dark:bg-gray-900/80">
-                <Dialog.Title className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                <DialogTitle className="text-lg font-bold text-gray-900 dark:text-gray-100">
                   {t('Clear all tokens?')}
-                </Dialog.Title>
+                </DialogTitle>
                 <div className="mt-2">
                   <p className="text-sm text-gray-500">
                     {t('These tokens are used to authenticate yourself into password protected folders, ') +
