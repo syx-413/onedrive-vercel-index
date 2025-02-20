@@ -39,7 +39,7 @@ const Auth: FC<{ redirect: string }> = ({ redirect }) => {
           onChange={e => {
             setToken(e.target.value)
           }}
-          onKeyPress={e => {
+          onKeyDown={e => {
             if (e.key === 'Enter' || e.key === 'NumpadEnter') {
               setPersistedToken(token)
               router.reload()
