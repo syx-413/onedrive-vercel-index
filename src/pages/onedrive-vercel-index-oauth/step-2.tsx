@@ -47,7 +47,7 @@ export default function OAuthStep2() {
               {t('Welcome to your new onedrive-vercel-index 🎉')}
             </h3>
 
-            <h3 className="mt-4 mb-2 text-lg font-medium">{t('Step 2/3: Get authorisation code')}</h3>
+            <h3 className="mb-2 mt-4 text-lg font-medium">{t('Step 2/3: Get authorisation code')}</h3>
 
             <p className="py-1 text-sm font-medium text-red-400">
               <Trans>
@@ -62,7 +62,7 @@ export default function OAuthStep2() {
                 window.open(oAuthUrl)
               }}
             >
-              <div className="absolute top-0 right-0 p-1 opacity-60">
+              <div className="absolute right-0 top-0 p-1 opacity-60">
                 <FontAwesomeIcon icon="external-link-alt" />
               </div>
               <pre className="overflow-x-auto whitespace-pre-wrap p-2">
@@ -81,7 +81,7 @@ export default function OAuthStep2() {
               </Trans>
             </p>
 
-            <div className="my-4 mx-auto w-2/3 overflow-hidden rounded">
+            <div className="mx-auto my-4 w-2/3 overflow-hidden rounded">
               <Image src="/images/step-2-screenshot.png" width={1466} height={607} alt="step 2 screenshot" />
             </div>
 

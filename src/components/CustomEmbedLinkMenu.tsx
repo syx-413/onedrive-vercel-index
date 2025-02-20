@@ -1,6 +1,14 @@
 import { Dispatch, Fragment, SetStateAction, useRef, useState } from 'react'
 import { useTranslation } from 'next-i18next'
-import { Description,DialogTitle, Dialog, DialogBackdrop, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
+import {
+  Description,
+  DialogTitle,
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+  Transition,
+  TransitionChild,
+} from '@headlessui/react'
 
 // import { Dialog, Transition } from '@headlessui/react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -19,7 +27,7 @@ function LinkContainer({ title, value }: { title: string; value: string }) {
         <div className="opacity-80">{value}</div>
         <button
           onClick={() => clipboard.copy(value)}
-          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg border border-gray-200/50 bg-white/80 p-1.5 opacity-0 transition-all group-hover:opacity-100 hover:bg-gray-100 dark:border-gray-700/50 dark:bg-gray-800/80 dark:hover:bg-gray-700/80"
+          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg border border-gray-200/50 bg-white/80 p-1.5 opacity-0 transition-all hover:bg-gray-100 group-hover:opacity-100 dark:border-gray-700/50 dark:bg-gray-800/80 dark:hover:bg-gray-700/80"
         >
           {clipboard.copied ? <FontAwesomeIcon icon="check" /> : <FontAwesomeIcon icon="copy" />}
         </button>
@@ -52,7 +60,12 @@ export default function CustomEmbedLinkMenu({
   return (
     <Transition appear show={menuOpen} as={Fragment}>
       {/* <Dialog as="div" className="fixed inset-0 z-10 overflow-y-auto" onClose={closeMenu} initialFocus={focusInputRef}> */}
-      <Dialog as="div" className="fixed inset-0 z-[200] overflow-y-auto" onClose={closeMenu} initialFocus={focusInputRef}>
+      <Dialog
+        as="div"
+        className="fixed inset-0 z-[200] overflow-y-auto"
+        onClose={closeMenu}
+        initialFocus={focusInputRef}
+      >
         <div className="min-h-screen px-4 text-center">
           <TransitionChild
             as={Fragment}
@@ -63,8 +76,8 @@ export default function CustomEmbedLinkMenu({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-         <DialogBackdrop className="fixed inset-0 bg-white/60 dark:bg-gray-800/60" />
-        </TransitionChild>
+            <DialogBackdrop className="fixed inset-0 bg-white/60 dark:bg-gray-800/60" />
+          </TransitionChild>
 
           {/* This element is to trick the browser into centering the modal contents. */}
           <span className="inline-block h-screen align-middle" aria-hidden="true">

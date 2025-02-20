@@ -1,9 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IconName } from '@fortawesome/fontawesome-svg-core'
 // import { Dialog,  Transition } from '@headlessui/react'
-import { DialogTitle,Dialog, DialogBackdrop, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
-
-
+import { DialogTitle, Dialog, DialogBackdrop, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
 
 import toast, { Toaster } from 'react-hot-toast'
 import { useHotkeys } from 'react-hotkeys-hook'
@@ -68,14 +66,14 @@ const Navbar = () => {
       <SearchModal searchOpen={searchOpen} setSearchOpen={setSearchOpen} />
 
       <div className="mx-auto flex w-full items-center justify-between space-x-4 px-4 py-1">
-        <Link href="/" passHref className="flex items-center space-x-2 py-2 hover:opacity-80 dark:text-white md:p-2">
+        <Link href="/" passHref className="flex items-center space-x-2 py-2 hover:opacity-80 md:p-2 dark:text-white">
           <Image src={siteConfig.icon} alt="icon" width="25" height="25" priority />
           <span className="hidden font-bold sm:block">{siteConfig.title}</span>
         </Link>
 
         <div className="flex flex-1 items-center space-x-4 text-gray-700 md:flex-initial">
           <button
-            className="flex flex-1 items-center justify-between rounded-lg bg-gray-100 px-2.5 py-1.5 hover:opacity-80 dark:bg-gray-800 dark:text-white md:w-48"
+            className="flex flex-1 items-center justify-between rounded-lg bg-gray-100 px-2.5 py-1.5 hover:opacity-80 md:w-48 dark:bg-gray-800 dark:text-white"
             onClick={openSearchBox}
           >
             <div className="flex items-center space-x-2">
@@ -196,7 +194,7 @@ const Navbar = () => {
                     <span>{t('Clear all')}</span>
                   </button>
                 </div>
-                </DialogPanel>
+              </DialogPanel>
             </TransitionChild>
           </div>
         </Dialog>

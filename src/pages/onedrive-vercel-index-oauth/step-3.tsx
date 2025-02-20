@@ -32,7 +32,7 @@ export default function OAuthStep3({ accessToken, expiryTime, refreshToken, erro
   const [buttonContent, setButtonContent] = useState(
     <div>
       <span>{t('Store tokens')}</span> <FontAwesomeIcon icon="key" />
-    </div>
+    </div>,
   )
   const [buttonError, setButtonError] = useState(false)
 
@@ -41,7 +41,7 @@ export default function OAuthStep3({ accessToken, expiryTime, refreshToken, erro
     setButtonContent(
       <div>
         <span>{t('Storing tokens')}</span> <LoadingIcon className="ml-1 inline h-4 w-4 animate-spin" />
-      </div>
+      </div>,
     )
 
     // verify identity of the authenticated user with the Microsoft Graph API
@@ -51,7 +51,7 @@ export default function OAuthStep3({ accessToken, expiryTime, refreshToken, erro
       setButtonContent(
         <div>
           <span>{t('Error validating identify, restart')}</span> <FontAwesomeIcon icon="exclamation-circle" />
-        </div>
+        </div>,
       )
       return
     }
@@ -60,7 +60,7 @@ export default function OAuthStep3({ accessToken, expiryTime, refreshToken, erro
       setButtonContent(
         <div>
           <span>{t('Do not pretend to be the site owner')}</span> <FontAwesomeIcon icon="exclamation-circle" />
-        </div>
+        </div>,
       )
       return
     }
@@ -71,7 +71,7 @@ export default function OAuthStep3({ accessToken, expiryTime, refreshToken, erro
         setButtonContent(
           <div>
             <span>{t('Stored! Going home...')}</span> <FontAwesomeIcon icon="check" />
-          </div>
+          </div>,
         )
         setTimeout(() => {
           router.push('/')
@@ -82,7 +82,7 @@ export default function OAuthStep3({ accessToken, expiryTime, refreshToken, erro
         setButtonContent(
           <div>
             <span>{t('Error storing the token')}</span> <FontAwesomeIcon icon="exclamation-circle" />
-          </div>
+          </div>,
         )
       })
   }
@@ -111,7 +111,7 @@ export default function OAuthStep3({ accessToken, expiryTime, refreshToken, erro
               {t('Welcome to your new onedrive-vercel-index 🎉')}
             </h3>
 
-            <h3 className="mt-4 mb-2 text-lg font-medium">{t('Step 3/3: Get access and refresh tokens')}</h3>
+            <h3 className="mb-2 mt-4 text-lg font-medium">{t('Step 3/3: Get access and refresh tokens')}</h3>
             {error ? (
               <div>
                 <p className="py-1 font-medium text-red-500">
@@ -193,10 +193,10 @@ export default function OAuthStep3({ accessToken, expiryTime, refreshToken, erro
                     {
                       minutes: Math.floor(expiryTimeLeft / 60),
                       seconds: expiryTimeLeft - Math.floor(expiryTimeLeft / 60) * 60,
-                    }
+                    },
                   ) +
                     t(
-                      "Don't worry, after storing them, onedrive-vercel-index will take care of token refreshes and updates after your site goes live."
+                      "Don't worry, after storing them, onedrive-vercel-index will take care of token refreshes and updates after your site goes live.",
                     )}
                 </p>
 

@@ -274,7 +274,7 @@ const FileListing: FC<{ query?: ParsedUrlQuery }> = ({ query }) => {
         .filter(c => selected[c.id])
         .map(
           c =>
-            `${baseUrl}/api/raw/?path=${path}/${encodeURIComponent(c.name)}${hashedToken ? `&odpt=${hashedToken}` : ''}`
+            `${baseUrl}/api/raw/?path=${path}/${encodeURIComponent(c.name)}${hashedToken ? `&odpt=${hashedToken}` : ''}`,
         )
         .join('\n')
     }
@@ -289,7 +289,7 @@ const FileListing: FC<{ query?: ParsedUrlQuery }> = ({ query }) => {
                 path: p,
                 status: error.status,
                 message: error.message,
-              })
+              }),
             )
             continue
           }

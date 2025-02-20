@@ -9,7 +9,7 @@ import { useTranslation } from 'next-i18next'
 import Link from 'next/link'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 // import { Dialog, Transition } from '@headlessui/react'
-import { DialogTitle,Dialog, DialogPanel, DialogBackdrop, Transition, TransitionChild } from '@headlessui/react'
+import { DialogTitle, Dialog, DialogPanel, DialogBackdrop, Transition, TransitionChild } from '@headlessui/react'
 import type { OdDriveItem, OdSearchResult } from '../types'
 import { LoadingIcon } from './Loading'
 
@@ -115,7 +115,7 @@ function SearchResultItemTemplate({
 function SearchResultItemLoadRemote({ result }: { result: OdSearchResult[number] }) {
   const { data, error }: SWRResponse<OdDriveItem, { status: number; message: any }> = useSWR(
     [`/api/item/?id=${result.id}`],
-    fetcher
+    fetcher,
   )
 
   const { t } = useTranslation()

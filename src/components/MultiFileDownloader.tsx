@@ -78,7 +78,7 @@ export async function downloadMultipleFiles({
       name,
       fetch(url).then(r => {
         return r.blob()
-      })
+      }),
     )
   })
 
@@ -132,7 +132,7 @@ export async function downloadTreelikeMultipleFiles({
       .reverse()
       .findIndex(
         ({ path: parent }) =>
-          path.substring(0, parent.length) === parent && path.substring(parent.length + 1).indexOf('/') === -1
+          path.substring(0, parent.length) === parent && path.substring(parent.length + 1).indexOf('/') === -1,
       )
     if (i === -1) {
       throw new Error('File array does not satisfy requirement')
@@ -145,7 +145,7 @@ export async function downloadTreelikeMultipleFiles({
     } else {
       dir.file(
         name,
-        fetch(url!).then(r => r.blob())
+        fetch(url!).then(r => r.blob()),
       )
     }
   }

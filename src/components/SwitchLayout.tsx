@@ -2,7 +2,7 @@ import { Fragment } from 'react'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 // import { Listbox, Transition } from '@headlessui/react'
-import { Listbox, ListboxButton, ListboxOption, ListboxOptions,Transition } from '@headlessui/react'
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions, Transition } from '@headlessui/react'
 import { useTranslation } from 'next-i18next'
 
 import useLocalStorage from '../utils/useLocalStorage'
@@ -18,7 +18,7 @@ const SwitchLayout = () => {
   const { t } = useTranslation()
 
   return (
-    <div className="relative w-24 flex-shrink-0 text-sm text-gray-600 dark:text-gray-300 md:w-28">
+    <div className="relative w-24 flex-shrink-0 text-sm text-gray-600 md:w-28 dark:text-gray-300">
       <Listbox value={preferredLayout} onChange={setPreferredLayout}>
         <ListboxButton className="relative w-full cursor-pointer rounded pl-4">
           <span className="pointer-events-none flex items-center">

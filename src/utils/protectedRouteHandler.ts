@@ -46,7 +46,7 @@ export function matchProtectedRoute(route: string): string {
           r
             .split('/')
             .map(p => encodeURIComponent(p))
-            .join('/')
+            .join('/'),
         )
       ) {
         authTokenPath = r

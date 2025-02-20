@@ -9,7 +9,7 @@ import { getStoredToken } from './protectedRouteHandler'
  */
 export default function useFileContent(
   fetchUrl: string,
-  path: string
+  path: string,
 ): { response: any; error: string; validating: boolean } {
   const [response, setResponse] = useState('')
   const [validating, setValidating] = useState(true)

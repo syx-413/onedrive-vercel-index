@@ -10,7 +10,7 @@ export function getReadablePath(path: string) {
     .map(s =>
       Array.from(s)
         .map(c => (isSafeChar(c) ? c : encodeURIComponent(c)))
-        .join('')
+        .join(''),
     )
     .join('/')
   return path

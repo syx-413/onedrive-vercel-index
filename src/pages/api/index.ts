@@ -114,7 +114,7 @@ export function getAuthTokenPath(path: string) {
 export async function checkAuthRoute(
   cleanPath: string,
   accessToken: string,
-  odTokenHeader: string
+  odTokenHeader: string,
 ): Promise<{ code: 200 | 401 | 404 | 500; message: string }> {
   // Handle authentication through .password
   const authTokenPath = getAuthTokenPath(cleanPath)

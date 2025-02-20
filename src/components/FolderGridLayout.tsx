@@ -119,7 +119,7 @@ const FolderGridLayout = ({
             key={c.id}
             className="group relative overflow-hidden rounded transition-all duration-100 hover:bg-gray-100 dark:hover:bg-gray-850"
           >
-            <div className="absolute top-0 right-0 z-10 m-1 rounded bg-white/50 py-0.5 opacity-0 transition-all duration-100 group-hover:opacity-100 dark:bg-gray-900/50">
+            <div className="absolute right-0 top-0 z-10 m-1 rounded bg-white/50 py-0.5 opacity-0 transition-all duration-100 group-hover:opacity-100 dark:bg-gray-900/50">
               {c.folder ? (
                 <div>
                   <span
@@ -153,7 +153,7 @@ const FolderGridLayout = ({
                       clipboard.copy(
                         `${getBaseUrl()}/api/raw/?path=${getItemPath(c.name)}${
                           hashedToken ? `&odpt=${hashedToken}` : ''
-                        }`
+                        }`,
                       )
                       toast.success(t('Copied raw file permalink.'))
                     }}
@@ -176,7 +176,7 @@ const FolderGridLayout = ({
             <div
               className={`${
                 selected[c.id] ? 'opacity-100' : 'opacity-0'
-              } absolute top-0 left-0 z-10 m-1 rounded bg-white/50 py-0.5 group-hover:opacity-100 dark:bg-gray-900/50`}
+              } absolute left-0 top-0 z-10 m-1 rounded bg-white/50 py-0.5 group-hover:opacity-100 dark:bg-gray-900/50`}
             >
               {!c.folder && !(c.name === '.password') && (
                 <Checkbox
