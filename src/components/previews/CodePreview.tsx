@@ -4,7 +4,7 @@ import useSystemTheme from 'react-use-system-theme'
 import { useRouter } from 'next/router'
 
 import { LightAsync as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { tomorrowNightEighties, tomorrow } from 'react-syntax-highlighter/dist/cjs/styles/hljs'
+import { xcode } from 'react-syntax-highlighter/dist/cjs/styles/hljs'
 
 import useFileContent from '../../utils/fetchOnMount'
 import { getLanguageByFileName } from '../../utils/getPreviewType'
@@ -45,7 +45,7 @@ const CodePreview: FC<{ file: any }> = ({ file }) => {
       <PreviewContainer>
         <SyntaxHighlighter
           language={getLanguageByFileName(file.name)}
-          style={theme === 'dark' ? tomorrowNightEighties : tomorrow}
+          style={theme === 'dark' ? xcode : xcode}
         >
           {content}
         </SyntaxHighlighter>
