@@ -2,7 +2,7 @@ import type { OdFileObject } from '../../types'
 import { FC, useEffect, useRef, useState } from 'react'
 
 // import ReactAudioPlayer from 'react-audio-player'
-import AudioPlayer from 'react-h5-audio-player';
+import AudioPlayer, { RHAP_UI } from 'react-h5-audio-player'
 import 'react-h5-audio-player/lib/styles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useTranslation } from 'next-i18next'
@@ -97,20 +97,18 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
             </div>
 
             <AudioPlayer
-              className="h-20 w-full"
+              className="h-11 w-full"
               src={`/api/raw/?path=${asPath}${hashedToken ? `&odpt=${hashedToken}` : ''}`}
               ref={rapRef}
-              autoPlayAfterSrcChange={true}
-              showSkipControls={true}
-              showJumpControls={false}
-              // controls
-              preload="auto"
-              style={{
-                borderRadius: '8px',
-                backgroundColor: 'var(--bg-color)',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-              }}
-              // volume={playerVolume}
+              customProgressBarSection={[
+                RHAP_UI.CURRENT_LEFT_TIME,
+                RHAP_UI.PROGRESS_BAR,
+                // RHAP_UI.MAIN_CONTROLS,
+              ]}
+              customAdditionalControls={[]}
+              volume={0.7}
+              autoPlay
+              loop = {true}
             />
           </div>
         </div>
