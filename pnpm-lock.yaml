@@ -93,8 +93,8 @@ importers:
         specifier: ^0.17.0
         version: 0.17.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-cookie:
-        specifier: ^7.0.0
-        version: 7.2.2(react@18.3.1)
+        specifier: ^8.0.0
+        version: 8.0.0(react@18.3.1)
       react-copy-to-clipboard:
         specifier: ^5.0.3
         version: 5.1.0(react@18.3.1)
@@ -2891,8 +2891,8 @@ packages:
       react: '>=16'
       react-dom: '>=16'
 
-  react-cookie@7.2.2:
-    resolution: {integrity: sha512-e+hi6axHcw9VODoeVu8WyMWyoosa1pzpyjfvrLdF7CexfU+WSGZdDuRfHa4RJgTpfv3ZjdIpHE14HpYBieHFhg==}
+  react-cookie@8.0.0:
+    resolution: {integrity: sha512-bfYsiNOlphYuZRzbOToZ0iqWx6vIxIhu++83N6IYNTdE9XQMONg89D8nohfNXvQDeB9UAdKlR38dC6vHAdgLiw==}
     peerDependencies:
       react: '>= 16.3.0'
 
@@ -6619,7 +6619,7 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  react-cookie@7.2.2(react@18.3.1):
+  react-cookie@8.0.0(react@18.3.1):
     dependencies:
       '@types/hoist-non-react-statics': 3.3.6
       hoist-non-react-statics: 3.3.2
