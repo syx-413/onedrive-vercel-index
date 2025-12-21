@@ -56,7 +56,7 @@ const extractColorFromImage = (imgElement: HTMLImageElement): Promise<string> =>
       
       resolve(`rgb(${r}, ${g}, ${b})`)
     } else {
-      resolve('rgb(239, 68, 68)')
+      resolve('rgb(102, 204, 255)')
     }
   })
 }
@@ -74,8 +74,8 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
   // 获取当前目录路径
   const currentPath = asPath.substring(0, asPath.lastIndexOf('/')) || '/'
   
-  // 获取当前目录的所有文件
-  const { data: folderData } = useProtectedSWRInfinite(currentPath)
+  // 获取当前目录的所有文件（支持分页）
+  const { data: folderData, size, setSize } = useProtectedSWRInfinite(currentPath)
 
   const rapRef = useRef<AudioPlayer>(null)
   const imgRef = useRef<HTMLImageElement>(null)
@@ -84,14 +84,31 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
   const [themeColor, setThemeColor] = useState('rgb(239, 68, 68)')
   const [currentFile, setCurrentFile] = useState<OdFileObject>(file)
   const [playlist, setPlaylist] = useState<Array<{ name: string; file: any }>>([])
+  const [isLoadingPlaylist, setIsLoadingPlaylist] = useState(true)
 
   const thumbnail = `/api/thumbnail/?path=${asPath}&size=medium${hashedToken ? `&odpt=${hashedToken}` : ''}`
   const [brokenThumbnail, setBrokenThumbnail] = useState(false)
 
+  // 自动加载所有分页数据
+  useEffect(() => {
+    if (folderData) {
+      const responses: any[] = [].concat(...folderData)
+      const lastResponse = responses[responses.length - 1]
+      
+      // 如果还有下一页，自动加载
+      if (lastResponse?.next) {
+        setSize(size + 1)
+      } else {
+        // 所有数据加载完成
+        setIsLoadingPlaylist(false)
+      }
+    }
+  }, [folderData, size, setSize])
+
   // 处理目录数据，提取音频文件列表
   useEffect(() => {
-    if (folderData && folderData[0]?.folder) {
-      const responses: any[] = folderData ? [].concat(...folderData) : []
+    if (folderData && !isLoadingPlaylist) {
+      const responses: any[] = [].concat(...folderData)
       const allFiles = [].concat(...responses.map((r: any) => r.folder?.value || []))
       
       // 筛选音频文件
@@ -102,7 +119,7 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
         file: f,
       })))
     }
-  }, [folderData])
+  }, [folderData, isLoadingPlaylist])
 
   useEffect(() => {
     const rap = rapRef.current?.audio.current
@@ -289,8 +306,8 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
           {/* 播放列表 */}
           {playlist.length > 1 && (
             <div className="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2">
+              <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white flex items-center space-x-2">
                   <FontAwesomeIcon icon="list" className="h-4 w-4" />
                   <span>{t('Playlist') || '播放列表'}</span>
                   <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
@@ -299,14 +316,14 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
                 </h3>
               </div>
               
-              <div className="max-h-96 overflow-y-auto">
+              <div className="max-h-[600px] overflow-y-auto">
                 {playlist.map((item, index) => {
                   const isCurrentTrack = item.name === currentFile.name
                   return (
                     <div
                       key={item.name}
                       onClick={handlePlaylistItemClick(item.file)}
-                      className={`flex items-center space-x-4 px-6 py-4 cursor-pointer transition-all duration-200 border-b border-gray-100 dark:border-gray-800 last:border-b-0 ${
+                      className={`flex items-center space-x-3 px-4 py-3 cursor-pointer transition-all duration-200 border-b border-gray-100 dark:border-gray-800 last:border-b-0 ${
                         isCurrentTrack 
                           ? 'bg-gradient-to-r from-gray-100 to-transparent dark:from-gray-800 dark:to-transparent' 
                           : 'hover:bg-gray-50 dark:hover:bg-gray-800/30'
@@ -316,15 +333,15 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
                       } : {}}
                     >
                       {/* 序号或播放图标 */}
-                      <div className="w-8 text-center">
+                      <div className="w-6 text-center flex-shrink-0">
                         {isCurrentTrack && playerStatus === PlayerState.Playing ? (
                           <div className="flex space-x-0.5 justify-center">
-                            <div className="w-0.5 h-4 rounded-full animate-pulse" style={{ backgroundColor: themeColor, animationDelay: '0ms' }} />
-                            <div className="w-0.5 h-4 rounded-full animate-pulse" style={{ backgroundColor: themeColor, animationDelay: '150ms' }} />
-                            <div className="w-0.5 h-4 rounded-full animate-pulse" style={{ backgroundColor: themeColor, animationDelay: '300ms' }} />
+                            <div className="w-0.5 h-3 rounded-full animate-pulse" style={{ backgroundColor: themeColor, animationDelay: '0ms' }} />
+                            <div className="w-0.5 h-3 rounded-full animate-pulse" style={{ backgroundColor: themeColor, animationDelay: '150ms' }} />
+                            <div className="w-0.5 h-3 rounded-full animate-pulse" style={{ backgroundColor: themeColor, animationDelay: '300ms' }} />
                           </div>
                         ) : (
-                          <span className={`text-sm ${isCurrentTrack ? 'font-bold' : 'text-gray-500 dark:text-gray-400'}`}
+                          <span className={`text-xs ${isCurrentTrack ? 'font-bold' : 'text-gray-500 dark:text-gray-400'}`}
                             style={isCurrentTrack ? { color: themeColor } : {}}>
                             {index + 1}
                           </span>
@@ -332,20 +349,20 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
                       </div>
 
                       {/* 音乐图标 */}
-                      <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
+                      <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
                         isCurrentTrack ? 'bg-gray-200 dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-800'
                       }`}
                         style={isCurrentTrack ? { backgroundColor: `${themeColor}20` } : {}}>
                         <FontAwesomeIcon 
                           icon="music" 
-                          className={`h-4 w-4 ${isCurrentTrack ? '' : 'text-gray-400 dark:text-gray-500'}`}
+                          className={`h-3 w-3 ${isCurrentTrack ? '' : 'text-gray-400 dark:text-gray-500'}`}
                           style={isCurrentTrack ? { color: themeColor } : {}}
                         />
                       </div>
 
                       {/* 歌曲名称 */}
                       <div className="flex-1 min-w-0">
-                        <div className={`truncate ${isCurrentTrack ? 'font-semibold' : 'text-gray-700 dark:text-gray-300'}`}
+                        <div className={`text-sm truncate ${isCurrentTrack ? 'font-semibold' : 'text-gray-700 dark:text-gray-300'}`}
                           style={isCurrentTrack ? { color: themeColor } : {}}>
                           {item.name}
                         </div>
@@ -354,7 +371,7 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
                       {/* 正在播放标识 */}
                       {isCurrentTrack && (
                         <div className="flex-shrink-0">
-                          <span className="text-xs px-2 py-1 rounded-full" style={{ 
+                          <span className="text-xs px-2 py-0.5 rounded-full" style={{ 
                             backgroundColor: `${themeColor}20`,
                             color: themeColor 
                           }}>
