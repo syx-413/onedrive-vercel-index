@@ -3,10 +3,10 @@ import type { OdFileObject } from '../../types'
 import { FC, useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
+import dynamic from 'next/dynamic'
 
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import Plyr from 'plyr-react'
 import { useAsync } from 'react-async-hook'
 import { useClipboard } from 'use-clipboard-copy'
 
@@ -20,6 +20,8 @@ import FourOhFour from '../FourOhFour'
 import Loading from '../Loading'
 import CustomEmbedLinkMenu from '../CustomEmbedLinkMenu'
 
+// 动态导入 Plyr 组件，禁用服务端渲染 (SSR)
+const Plyr = dynamic(() => import('plyr-react'), { ssr: false })
 import 'plyr-react/plyr.css'
 
 const VideoPlayer: FC<{
@@ -33,45 +35,52 @@ const VideoPlayer: FC<{
   mpegts: any
 }> = ({ videoName, videoUrl, width, height, thumbnail, subtitle, isFlv, mpegts }) => {
   useEffect(() => {
-    // Really really hacky way to inject subtitles as file blobs into the video element
-    axios
-      .get(subtitle, { responseType: 'blob' })
-      .then(resp => {
-        const track = document.querySelector('track')
-        track?.setAttribute('src', URL.createObjectURL(resp.data))
-      })
-      .catch(() => {
-        console.log('Could not load subtitle.')
-      })
+    // 只有在浏览器端才执行 document 操作
+    if (typeof window !== 'undefined') {
+      // Really really hacky way to inject subtitles as file blobs into the video element
+      axios
+        .get(subtitle, { responseType: 'blob' })
+        .then(resp => {
+          const track = document.querySelector('track')
+          track?.setAttribute('src', URL.createObjectURL(resp.data))
+        })
+        .catch(() => {
+          console.log('Could not load subtitle.')
+        })
 
-    if (isFlv) {
-      const loadFlv = () => {
-        // Really hacky way to get the exposed video element from Plyr
-        const video = document.getElementById('plyr')
-        const flv = mpegts.createPlayer({ url: videoUrl, type: 'flv' })
-        flv.attachMediaElement(video)
-        flv.load()
+      if (isFlv && mpegts) {
+        const loadFlv = () => {
+          // Really hacky way to get the exposed video element from Plyr
+          const video = document.getElementById('plyr')
+          if (video) {
+            const flv = mpegts.createPlayer({ url: videoUrl, type: 'flv' })
+            flv.attachMediaElement(video as HTMLVideoElement)
+            flv.load()
+          }
+        }
+        loadFlv()
       }
-      loadFlv()
     }
   }, [videoUrl, isFlv, mpegts, subtitle])
 
   // Common plyr configs, including the video source and plyr options
-  const plyrSource = {
+  const plyrSource: any = {
     type: 'video',
     title: videoName,
     poster: thumbnail,
     tracks: [{ kind: 'captions', label: videoName, src: '', default: true }],
   }
-  const plyrOptions: Plyr.Options = {
+  
+  const plyrOptions: any = {
     ratio: `${width ?? 16}:${height ?? 9}`,
     fullscreen: { iosNative: true },
   }
+
   if (!isFlv) {
-    // If the video is not in flv format, we can use the native plyr and add sources directly with the video URL
     plyrSource['sources'] = [{ src: videoUrl }]
   }
-  return <Plyr id="plyr" source={plyrSource as Plyr.SourceInfo} options={plyrOptions} />
+
+  return <Plyr id="plyr" source={plyrSource} options={plyrOptions} />
 }
 
 const VideoPreview: FC<{ file: OdFileObject }> = ({ file }) => {
@@ -82,14 +91,9 @@ const VideoPreview: FC<{ file: OdFileObject }> = ({ file }) => {
   const [menuOpen, setMenuOpen] = useState(false)
   const { t } = useTranslation()
 
-  // OneDrive generates thumbnails for its video files, we pick the thumbnail with the highest resolution
   const thumbnail = `/api/thumbnail/?path=${asPath}&size=large${hashedToken ? `&odpt=${hashedToken}` : ''}`
-
-  // We assume subtitle files are beside the video with the same name, only webvtt '.vtt' files are supported
   const vtt = `${asPath.substring(0, asPath.lastIndexOf('.'))}.vtt`
   const subtitle = `/api/raw/?path=${vtt}${hashedToken ? `&odpt=${hashedToken}` : ''}`
-
-  // We also format the raw video file for the in-browser player as well as all other players
   const videoUrl = `/api/raw/?path=${asPath}${hashedToken ? `&odpt=${hashedToken}` : ''}`
 
   const isFlv = getExtension(file.name) === 'flv'
@@ -98,7 +102,7 @@ const VideoPreview: FC<{ file: OdFileObject }> = ({ file }) => {
     error,
     result: mpegts,
   } = useAsync(async () => {
-    if (isFlv) {
+    if (isFlv && typeof window !== 'undefined') {
       return (await import('mpegts.js')).default
     }
   }, [isFlv])
@@ -165,7 +169,10 @@ const VideoPreview: FC<{ file: OdFileObject }> = ({ file }) => {
             btnImage="/players/potplayer.png"
           />
           <DownloadButton
-            onClickCallback={() => window.open(`nplayer-http://${window?.location.hostname ?? ''}${videoUrl}`)}
+            onClickCallback={() => {
+              const hostname = typeof window !== 'undefined' ? window.location.hostname : ''
+              window.open(`nplayer-http://${hostname}${videoUrl}`)
+            }}
             btnText="nPlayer"
             btnImage="/players/nplayer.png"
           />
