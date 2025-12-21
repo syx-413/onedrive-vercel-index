@@ -1,6 +1,5 @@
 import type { OdFileObject } from '../../types'
 import { FC, useEffect, useRef, useState } from 'react'
-import Image from 'next/image'
 
 import AudioPlayer, { RHAP_UI } from 'react-h5-audio-player'
 import 'react-h5-audio-player/lib/styles.css'
@@ -79,36 +78,40 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
   const { data: folderData, size, setSize } = useProtectedSWRInfinite(currentPath)
 
   const rapRef = useRef<AudioPlayer>(null)
+  const imgRef = useRef<HTMLImageElement>(null)
   const [playerStatus, setPlayerStatus] = useState(PlayerState.Loading)
   const [playerVolume, setPlayerVolume] = useState(1)
   const [themeColor, setThemeColor] = useState('rgb(239, 68, 68)')
   const [currentFile, setCurrentFile] = useState<OdFileObject>(file)
   const [playlist, setPlaylist] = useState<Array<{ name: string; file: any }>>([])
-  const [isLoadingPlaylist, setIsLoadingPlaylist] = useState(true)
 
   const thumbnail = `/api/thumbnail/?path=${asPath}&size=medium${hashedToken ? `&odpt=${hashedToken}` : ''}`
   const [brokenThumbnail, setBrokenThumbnail] = useState(false)
 
   // 自动加载所有分页数据
   useEffect(() => {
-    if (folderData) {
-      const responses: any[] = [].concat(...folderData)
-      const lastResponse = responses[responses.length - 1]
-      
-      // 如果还有下一页，自动加载
-      if (lastResponse?.next) {
-        setSize(size + 1)
-      } else {
-        // 所有数据加载完成
-        setIsLoadingPlaylist(false)
-      }
+    if (!folderData) return
+    
+    const responses: any[] = [].concat(...folderData)
+    const lastResponse = responses[responses.length - 1]
+    
+    // 如果还有下一页且 next 不是 undefined，自动加载
+    if (lastResponse?.next && lastResponse.next !== 'undefined') {
+      setSize(size + 1)
     }
   }, [folderData, size, setSize])
 
   // 处理目录数据，提取音频文件列表
   useEffect(() => {
-    if (folderData && !isLoadingPlaylist) {
-      const responses: any[] = [].concat(...folderData)
+    if (!folderData) return
+    
+    const responses: any[] = [].concat(...folderData)
+    
+    // 检查是否还在加载中
+    const lastResponse = responses[responses.length - 1]
+    const isLoading = lastResponse?.next && lastResponse.next !== 'undefined'
+    
+    if (!isLoading) {
       const allFiles = [].concat(...responses.map((r: any) => r.folder?.value || []))
       
       // 筛选音频文件
@@ -119,7 +122,7 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
         file: f,
       })))
     }
-  }, [folderData, isLoadingPlaylist])
+  }, [folderData])
 
   useEffect(() => {
     const rap = rapRef.current?.audio.current
@@ -144,9 +147,9 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
     }
   }, [currentFile, playlist])
 
-  const handleImageLoad = async (img: HTMLImageElement) => {
-    if (img.naturalWidth > 0) {
-      const color = await extractColorFromImage(img)
+  const handleImageLoad = async () => {
+    if (imgRef.current) {
+      const color = await extractColorFromImage(imgRef.current)
       setThemeColor(color)
     }
   }
@@ -187,20 +190,17 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
 
                 {/* 专辑封面 */}
                 {!brokenThumbnail ? (
-                  <div className="relative h-full w-full">
-                    <Image
-                      className={`object-cover transition-transform duration-500 ${
-                        playerStatus === PlayerState.Playing ? 'scale-105' : 'scale-100'
-                      }`}
-                      src={currentThumbnail}
-                      alt={currentFile.name}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 320px"
-                      onError={() => setBrokenThumbnail(true)}
-                      onLoadingComplete={(img) => handleImageLoad(img)}
-                      unoptimized
-                    />
-                  </div>
+                  <img
+                    ref={imgRef}
+                    className={`h-full w-full object-cover transition-transform duration-500 ${
+                      playerStatus === PlayerState.Playing ? 'scale-105' : 'scale-100'
+                    }`}
+                    src={currentThumbnail}
+                    alt={currentFile.name}
+                    onError={() => setBrokenThumbnail(true)}
+                    onLoad={handleImageLoad}
+                    crossOrigin="anonymous"
+                  />
                 ) : (
                   <div 
                     className="flex h-full w-full items-center justify-center"
