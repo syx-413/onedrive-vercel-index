@@ -12,6 +12,7 @@ import { DownloadBtnContainer, PreviewContainer } from './Containers'
 import { LoadingIcon } from '../Loading'
 import { formatModifiedDateTime } from '../../utils/fileDetails'
 import { getStoredToken } from '../../utils/protectedRouteHandler'
+import { useProtectedSWRInfinite } from '../../utils/fetchWithSWR'
 
 enum PlayerState {
   Loading,
@@ -32,7 +33,6 @@ const extractColorFromImage = (imgElement: HTMLImageElement): Promise<string> =>
     if (ctx) {
       ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height)
       
-      // 采样图片中心区域的颜色
       const imageData = ctx.getImageData(
         canvas.width / 4,
         canvas.height / 4,
@@ -56,9 +56,14 @@ const extractColorFromImage = (imgElement: HTMLImageElement): Promise<string> =>
       
       resolve(`rgb(${r}, ${g}, ${b})`)
     } else {
-      resolve('rgb(239, 68, 68)') // 默认红色
+      resolve('rgb(239, 68, 68)')
     }
   })
+}
+
+// 判断是否为音频文件
+const isAudioFile = (mimeType: string) => {
+  return mimeType.startsWith('audio/')
 }
 
 const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
@@ -66,20 +71,52 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
   const { asPath } = useRouter()
   const hashedToken = getStoredToken(asPath)
 
+  // 获取当前目录路径
+  const currentPath = asPath.substring(0, asPath.lastIndexOf('/')) || '/'
+  
+  // 获取当前目录的所有文件
+  const { data: folderData } = useProtectedSWRInfinite(currentPath)
+
   const rapRef = useRef<AudioPlayer>(null)
   const imgRef = useRef<HTMLImageElement>(null)
   const [playerStatus, setPlayerStatus] = useState(PlayerState.Loading)
   const [playerVolume, setPlayerVolume] = useState(1)
   const [themeColor, setThemeColor] = useState('rgb(239, 68, 68)')
+  const [currentFile, setCurrentFile] = useState<OdFileObject>(file)
+  const [playlist, setPlaylist] = useState<Array<{ name: string; file: any }>>([])
 
   const thumbnail = `/api/thumbnail/?path=${asPath}&size=medium${hashedToken ? `&odpt=${hashedToken}` : ''}`
   const [brokenThumbnail, setBrokenThumbnail] = useState(false)
+
+  // 处理目录数据，提取音频文件列表
+  useEffect(() => {
+    if (folderData && folderData[0]?.folder) {
+      const responses: any[] = folderData ? [].concat(...folderData) : []
+      const allFiles = [].concat(...responses.map((r: any) => r.folder?.value || []))
+      
+      // 筛选音频文件
+      const audioFiles = allFiles.filter((f: any) => f.file && isAudioFile(f.file.mimeType))
+      
+      setPlaylist(audioFiles.map((f: any) => ({
+        name: f.name,
+        file: f,
+      })))
+    }
+  }, [folderData])
 
   useEffect(() => {
     const rap = rapRef.current?.audio.current
     if (rap) {
       rap.oncanplay = () => setPlayerStatus(PlayerState.Ready)
-      rap.onended = () => setPlayerStatus(PlayerState.Paused)
+      rap.onended = () => {
+        // 自动播放下一首
+        const currentIndex = playlist.findIndex(item => item.name === currentFile.name)
+        if (currentIndex < playlist.length - 1) {
+          handlePlaylistItemClick(playlist[currentIndex + 1].file)()
+        } else {
+          setPlayerStatus(PlayerState.Paused)
+        }
+      }
       rap.onpause = () => setPlayerStatus(PlayerState.Paused)
       rap.onplay = () => setPlayerStatus(PlayerState.Playing)
       rap.onplaying = () => setPlayerStatus(PlayerState.Playing)
@@ -88,9 +125,8 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
       rap.onerror = () => setPlayerStatus(PlayerState.Paused)
       rap.onvolumechange = () => setPlayerVolume(rap.volume)
     }
-  }, [])
+  }, [currentFile, playlist])
 
-  // 当图片加载完成后提取颜色
   const handleImageLoad = async () => {
     if (imgRef.current) {
       const color = await extractColorFromImage(imgRef.current)
@@ -98,146 +134,240 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
     }
   }
 
+  // 处理播放列表项点击
+  const handlePlaylistItemClick = (fileItem: any) => () => {
+    setCurrentFile(fileItem)
+    setBrokenThumbnail(false)
+    setPlayerStatus(PlayerState.Loading)
+  }
+
+  // 当前播放文件的路径
+  const currentFilePath = `${currentPath}/${encodeURIComponent(currentFile.name)}`
+  const currentThumbnail = `/api/thumbnail/?path=${currentFilePath}&size=medium${hashedToken ? `&odpt=${hashedToken}` : ''}`
+
   return (
     <>
       <PreviewContainer>
-        <div className="flex flex-col space-y-6 md:flex-row md:space-x-8 md:space-y-0">
-          {/* 专辑封面区域 */}
-          <div className="relative flex w-full items-center justify-center md:w-80">
-            <div 
-              className="absolute inset-0 rounded-2xl blur-3xl opacity-30"
-              style={{ background: themeColor }}
-            />
-            
-            <div className="relative aspect-square w-full overflow-hidden rounded-2xl shadow-2xl">
-              {/* 加载动画 */}
-              <div
-                className={`absolute inset-0 z-20 flex items-center justify-center bg-gray-900 transition-opacity duration-300 ${
-                  playerStatus === PlayerState.Loading ? 'opacity-90' : 'opacity-0 pointer-events-none'
-                }`}
-              >
-                <LoadingIcon className="h-8 w-8 animate-spin text-white" />
-              </div>
-
-              {/* 专辑封面 */}
-              {!brokenThumbnail ? (
-                <img
-                  ref={imgRef}
-                  className={`h-full w-full object-cover transition-transform duration-500 ${
-                    playerStatus === PlayerState.Playing ? 'scale-105' : 'scale-100'
-                  }`}
-                  src={thumbnail}
-                  alt={file.name}
-                  onError={() => setBrokenThumbnail(true)}
-                  onLoad={handleImageLoad}
-                  crossOrigin="anonymous"
-                />
-              ) : (
-                <div 
-                  className="flex h-full w-full items-center justify-center"
-                  style={{ background: `linear-gradient(135deg, ${themeColor}, rgba(0,0,0,0.8))` }}
-                >
-                  <FontAwesomeIcon
-                    className={`h-16 w-16 text-white ${playerStatus === PlayerState.Playing ? 'animate-pulse' : ''}`}
-                    icon="music"
-                  />
-                </div>
-              )}
-
-              {/* 播放状态指示器 */}
-              <div
-                className={`absolute bottom-4 right-4 rounded-full p-3 backdrop-blur-md transition-all duration-300 ${
-                  playerStatus === PlayerState.Playing ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
-                }`}
-                style={{ backgroundColor: `${themeColor}40` }}
-              >
-                <div className="flex space-x-1">
-                  <div className="h-4 w-1 rounded-full bg-white animate-pulse" style={{ animationDelay: '0ms' }} />
-                  <div className="h-4 w-1 rounded-full bg-white animate-pulse" style={{ animationDelay: '150ms' }} />
-                  <div className="h-4 w-1 rounded-full bg-white animate-pulse" style={{ animationDelay: '300ms' }} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 播放器控制区域 */}
-          <div className="flex flex-1 flex-col justify-between space-y-6">
-            {/* 歌曲信息 */}
-            <div className="space-y-3">
-              <h2 className="text-2xl font-bold text-white line-clamp-2">{file.name}</h2>
-              <div className="flex items-center space-x-3 text-sm text-gray-400">
-                <span className="flex items-center space-x-2">
-                  <FontAwesomeIcon icon="clock" className="h-3 w-3" />
-                  <span>{formatModifiedDateTime(file.lastModifiedDateTime)}</span>
-                </span>
-              </div>
-            </div>
-
-            {/* 自定义播放器样式 */}
-            <div className="space-y-4">
-              <AudioPlayer
-                className="!bg-transparent !shadow-none"
-                src={`/api/raw/?path=${asPath}${hashedToken ? `&odpt=${hashedToken}` : ''}`}
-                ref={rapRef}
-                customProgressBarSection={[
-                  RHAP_UI.CURRENT_TIME,
-                  RHAP_UI.PROGRESS_BAR,
-                  RHAP_UI.DURATION,
-                ]}
-                customAdditionalControls={[]}
-                volume={0.7}
-                autoPlay
-                loop={true}
-                style={{
-                  '--rhap-theme-color': themeColor,
-                  '--rhap-bar-color': `${themeColor}40`,
-                } as React.CSSProperties}
+        <div className="flex flex-col space-y-6">
+          {/* 播放器主区域 */}
+          <div className="flex flex-col space-y-6 md:flex-row md:space-x-8 md:space-y-0">
+            {/* 专辑封面区域 */}
+            <div className="relative flex w-full items-center justify-center md:w-80">
+              <div 
+                className="absolute inset-0 rounded-2xl blur-3xl opacity-30"
+                style={{ background: themeColor }}
               />
-
-              {/* 音量控制 */}
-              <div className="flex items-center space-x-3 rounded-xl bg-gray-800/50 px-4 py-3 backdrop-blur-sm">
-                <FontAwesomeIcon 
-                  icon={playerVolume > 0 ? "volume-up" : "volume-mute"} 
-                  className="h-4 w-4 text-gray-400"
-                />
-                <div className="flex-1 h-1 rounded-full bg-gray-700">
-                  <div 
-                    className="h-full rounded-full transition-all duration-200"
-                    style={{ 
-                      width: `${playerVolume * 100}%`,
-                      backgroundColor: themeColor
-                    }}
-                  />
+              
+              <div className="relative aspect-square w-full overflow-hidden rounded-2xl shadow-2xl">
+                {/* 加载动画 */}
+                <div
+                  className={`absolute inset-0 z-20 flex items-center justify-center bg-gray-900 transition-opacity duration-300 ${
+                    playerStatus === PlayerState.Loading ? 'opacity-90' : 'opacity-0 pointer-events-none'
+                  }`}
+                >
+                  <LoadingIcon className="h-8 w-8 animate-spin text-white" />
                 </div>
-                <span className="text-xs text-gray-400 w-8 text-right">
-                  {Math.round(playerVolume * 100)}%
-                </span>
-              </div>
 
-              {/* 播放状态信息 */}
-              <div className="flex items-center justify-between rounded-xl bg-gray-800/50 px-4 py-3 backdrop-blur-sm">
-                <div className="flex items-center space-x-2">
-                  <div 
-                    className="h-2 w-2 rounded-full"
-                    style={{ 
-                      backgroundColor: themeColor,
-                      animation: playerStatus === PlayerState.Playing ? 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none'
-                    }}
+                {/* 专辑封面 */}
+                {!brokenThumbnail ? (
+                  <img
+                    ref={imgRef}
+                    className={`h-full w-full object-cover transition-transform duration-500 ${
+                      playerStatus === PlayerState.Playing ? 'scale-105' : 'scale-100'
+                    }`}
+                    src={currentThumbnail}
+                    alt={currentFile.name}
+                    onError={() => setBrokenThumbnail(true)}
+                    onLoad={handleImageLoad}
+                    crossOrigin="anonymous"
                   />
-                  <span className="text-sm text-gray-400">
-                    {playerStatus === PlayerState.Playing ? t('Playing') || '播放中' : 
-                     playerStatus === PlayerState.Loading ? t('Loading') || '加载中' : 
-                     t('Paused') || '已暂停'}
+                ) : (
+                  <div 
+                    className="flex h-full w-full items-center justify-center"
+                    style={{ background: `linear-gradient(135deg, ${themeColor}, rgba(0,0,0,0.8))` }}
+                  >
+                    <FontAwesomeIcon
+                      className={`h-16 w-16 text-white ${playerStatus === PlayerState.Playing ? 'animate-pulse' : ''}`}
+                      icon="music"
+                    />
+                  </div>
+                )}
+
+                {/* 播放状态指示器 */}
+                <div
+                  className={`absolute bottom-4 right-4 rounded-full p-3 backdrop-blur-md transition-all duration-300 ${
+                    playerStatus === PlayerState.Playing ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+                  }`}
+                  style={{ backgroundColor: `${themeColor}40` }}
+                >
+                  <div className="flex space-x-1">
+                    <div className="h-4 w-1 rounded-full bg-white animate-pulse" style={{ animationDelay: '0ms' }} />
+                    <div className="h-4 w-1 rounded-full bg-white animate-pulse" style={{ animationDelay: '150ms' }} />
+                    <div className="h-4 w-1 rounded-full bg-white animate-pulse" style={{ animationDelay: '300ms' }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 播放器控制区域 */}
+            <div className="flex flex-1 flex-col justify-between space-y-6">
+              {/* 歌曲信息 */}
+              <div className="space-y-3">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white line-clamp-2">{currentFile.name}</h2>
+                <div className="flex items-center space-x-3 text-sm text-gray-500 dark:text-gray-400">
+                  <span className="flex items-center space-x-2">
+                    <FontAwesomeIcon icon="clock" className="h-3 w-3" />
+                    <span>{formatModifiedDateTime(currentFile.lastModifiedDateTime)}</span>
                   </span>
                 </div>
-                <FontAwesomeIcon 
-                  icon="infinity" 
-                  className="h-4 w-4 text-gray-400"
-                  title={t('Loop') || '循环播放'}
+              </div>
+
+              {/* 自定义播放器样式 */}
+              <div className="space-y-4">
+                <AudioPlayer
+                  className="!bg-transparent !shadow-none"
+                  src={`/api/raw/?path=${currentFilePath}${hashedToken ? `&odpt=${hashedToken}` : ''}`}
+                  ref={rapRef}
+                  customProgressBarSection={[
+                    RHAP_UI.CURRENT_TIME,
+                    RHAP_UI.PROGRESS_BAR,
+                    RHAP_UI.DURATION,
+                  ]}
+                  customAdditionalControls={[]}
+                  volume={0.7}
+                  autoPlay
+                  style={{
+                    '--rhap-theme-color': themeColor,
+                    '--rhap-bar-color': `${themeColor}40`,
+                  } as React.CSSProperties}
                 />
+
+                {/* 音量控制 */}
+                <div className="flex items-center space-x-3 rounded-xl bg-gray-100 dark:bg-gray-800/50 px-4 py-3 backdrop-blur-sm">
+                  <FontAwesomeIcon 
+                    icon={playerVolume > 0 ? "volume-up" : "volume-mute"} 
+                    className="h-4 w-4 text-gray-500 dark:text-gray-400"
+                  />
+                  <div className="flex-1 h-1 rounded-full bg-gray-300 dark:bg-gray-700">
+                    <div 
+                      className="h-full rounded-full transition-all duration-200"
+                      style={{ 
+                        width: `${playerVolume * 100}%`,
+                        backgroundColor: themeColor
+                      }}
+                    />
+                  </div>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 w-8 text-right">
+                    {Math.round(playerVolume * 100)}%
+                  </span>
+                </div>
+
+                {/* 播放状态信息 */}
+                <div className="flex items-center justify-between rounded-xl bg-gray-100 dark:bg-gray-800/50 px-4 py-3 backdrop-blur-sm">
+                  <div className="flex items-center space-x-2">
+                    <div 
+                      className="h-2 w-2 rounded-full"
+                      style={{ 
+                        backgroundColor: themeColor,
+                        animation: playerStatus === PlayerState.Playing ? 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none'
+                      }}
+                    />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {playerStatus === PlayerState.Playing ? t('Playing') || '播放中' : 
+                       playerStatus === PlayerState.Loading ? t('Loading') || '加载中' : 
+                       t('Paused') || '已暂停'}
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    {playlist.length > 0 && `${playlist.findIndex(item => item.name === currentFile.name) + 1} / ${playlist.length}`}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+
+          {/* 播放列表 */}
+          {playlist.length > 1 && (
+            <div className="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2">
+                  <FontAwesomeIcon icon="list" className="h-4 w-4" />
+                  <span>{t('Playlist') || '播放列表'}</span>
+                  <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                    ({playlist.length} {t('tracks') || '首'})
+                  </span>
+                </h3>
+              </div>
+              
+              <div className="max-h-96 overflow-y-auto">
+                {playlist.map((item, index) => {
+                  const isCurrentTrack = item.name === currentFile.name
+                  return (
+                    <div
+                      key={item.name}
+                      onClick={handlePlaylistItemClick(item.file)}
+                      className={`flex items-center space-x-4 px-6 py-4 cursor-pointer transition-all duration-200 border-b border-gray-100 dark:border-gray-800 last:border-b-0 ${
+                        isCurrentTrack 
+                          ? 'bg-gradient-to-r from-gray-100 to-transparent dark:from-gray-800 dark:to-transparent' 
+                          : 'hover:bg-gray-50 dark:hover:bg-gray-800/30'
+                      }`}
+                      style={isCurrentTrack ? {
+                        borderLeft: `3px solid ${themeColor}`,
+                      } : {}}
+                    >
+                      {/* 序号或播放图标 */}
+                      <div className="w-8 text-center">
+                        {isCurrentTrack && playerStatus === PlayerState.Playing ? (
+                          <div className="flex space-x-0.5 justify-center">
+                            <div className="w-0.5 h-4 rounded-full animate-pulse" style={{ backgroundColor: themeColor, animationDelay: '0ms' }} />
+                            <div className="w-0.5 h-4 rounded-full animate-pulse" style={{ backgroundColor: themeColor, animationDelay: '150ms' }} />
+                            <div className="w-0.5 h-4 rounded-full animate-pulse" style={{ backgroundColor: themeColor, animationDelay: '300ms' }} />
+                          </div>
+                        ) : (
+                          <span className={`text-sm ${isCurrentTrack ? 'font-bold' : 'text-gray-500 dark:text-gray-400'}`}
+                            style={isCurrentTrack ? { color: themeColor } : {}}>
+                            {index + 1}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* 音乐图标 */}
+                      <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
+                        isCurrentTrack ? 'bg-gray-200 dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-800'
+                      }`}
+                        style={isCurrentTrack ? { backgroundColor: `${themeColor}20` } : {}}>
+                        <FontAwesomeIcon 
+                          icon="music" 
+                          className={`h-4 w-4 ${isCurrentTrack ? '' : 'text-gray-400 dark:text-gray-500'}`}
+                          style={isCurrentTrack ? { color: themeColor } : {}}
+                        />
+                      </div>
+
+                      {/* 歌曲名称 */}
+                      <div className="flex-1 min-w-0">
+                        <div className={`truncate ${isCurrentTrack ? 'font-semibold' : 'text-gray-700 dark:text-gray-300'}`}
+                          style={isCurrentTrack ? { color: themeColor } : {}}>
+                          {item.name}
+                        </div>
+                      </div>
+
+                      {/* 正在播放标识 */}
+                      {isCurrentTrack && (
+                        <div className="flex-shrink-0">
+                          <span className="text-xs px-2 py-1 rounded-full" style={{ 
+                            backgroundColor: `${themeColor}20`,
+                            color: themeColor 
+                          }}>
+                            {t('Now Playing') || '正在播放'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </PreviewContainer>
 
