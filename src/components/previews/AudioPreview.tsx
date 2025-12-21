@@ -1,5 +1,6 @@
 import type { OdFileObject } from '../../types'
 import { FC, useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 
 import AudioPlayer, { RHAP_UI } from 'react-h5-audio-player'
 import 'react-h5-audio-player/lib/styles.css'
@@ -56,7 +57,7 @@ const extractColorFromImage = (imgElement: HTMLImageElement): Promise<string> =>
       
       resolve(`rgb(${r}, ${g}, ${b})`)
     } else {
-      resolve('rgb(102, 204, 255)')
+      resolve('rgb(239, 68, 68)')
     }
   })
 }
@@ -78,7 +79,6 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
   const { data: folderData, size, setSize } = useProtectedSWRInfinite(currentPath)
 
   const rapRef = useRef<AudioPlayer>(null)
-  const imgRef = useRef<HTMLImageElement>(null)
   const [playerStatus, setPlayerStatus] = useState(PlayerState.Loading)
   const [playerVolume, setPlayerVolume] = useState(1)
   const [themeColor, setThemeColor] = useState('rgb(239, 68, 68)')
@@ -144,9 +144,9 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
     }
   }, [currentFile, playlist])
 
-  const handleImageLoad = async () => {
-    if (imgRef.current) {
-      const color = await extractColorFromImage(imgRef.current)
+  const handleImageLoad = async (img: HTMLImageElement) => {
+    if (img.naturalWidth > 0) {
+      const color = await extractColorFromImage(img)
       setThemeColor(color)
     }
   }
@@ -187,17 +187,20 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
 
                 {/* 专辑封面 */}
                 {!brokenThumbnail ? (
-                  <img
-                    ref={imgRef}
-                    className={`h-full w-full object-cover transition-transform duration-500 ${
-                      playerStatus === PlayerState.Playing ? 'scale-105' : 'scale-100'
-                    }`}
-                    src={currentThumbnail}
-                    alt={currentFile.name}
-                    onError={() => setBrokenThumbnail(true)}
-                    onLoad={handleImageLoad}
-                    crossOrigin="anonymous"
-                  />
+                  <div className="relative h-full w-full">
+                    <Image
+                      className={`object-cover transition-transform duration-500 ${
+                        playerStatus === PlayerState.Playing ? 'scale-105' : 'scale-100'
+                      }`}
+                      src={currentThumbnail}
+                      alt={currentFile.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 320px"
+                      onError={() => setBrokenThumbnail(true)}
+                      onLoadingComplete={(img) => handleImageLoad(img)}
+                      unoptimized
+                    />
+                  </div>
                 ) : (
                   <div 
                     className="flex h-full w-full items-center justify-center"
@@ -259,27 +262,7 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
                   } as React.CSSProperties}
                 />
 
-                {/* 音量控制 */}
-                <div className="flex items-center space-x-3 rounded-xl bg-gray-100 dark:bg-gray-800/50 px-4 py-3 backdrop-blur-sm">
-                  <FontAwesomeIcon 
-                    icon={playerVolume > 0 ? "volume-up" : "volume-mute"} 
-                    className="h-4 w-4 text-gray-500 dark:text-gray-400"
-                  />
-                  <div className="flex-1 h-1 rounded-full bg-gray-300 dark:bg-gray-700">
-                    <div 
-                      className="h-full rounded-full transition-all duration-200"
-                      style={{ 
-                        width: `${playerVolume * 100}%`,
-                        backgroundColor: themeColor
-                      }}
-                    />
-                  </div>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 w-8 text-right">
-                    {Math.round(playerVolume * 100)}%
-                  </span>
-                </div>
-
-                {/* 播放状态信息 */}
+                {/* 播放控制和状态信息 */}
                 <div className="flex items-center justify-between rounded-xl bg-gray-100 dark:bg-gray-800/50 px-4 py-3 backdrop-blur-sm">
                   <div className="flex items-center space-x-2">
                     <div 
@@ -295,9 +278,48 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
                        t('Paused') || '已暂停'}
                     </span>
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {playlist.length > 0 && `${playlist.findIndex(item => item.name === currentFile.name) + 1} / ${playlist.length}`}
-                  </div>
+                  
+                  {playlist.length > 1 && (
+                    <div className="flex items-center space-x-3">
+                      <button
+                        onClick={() => {
+                          const currentIndex = playlist.findIndex(item => item.name === currentFile.name)
+                          if (currentIndex > 0) {
+                            handlePlaylistItemClick(playlist[currentIndex - 1].file)()
+                          }
+                        }}
+                        disabled={playlist.findIndex(item => item.name === currentFile.name) === 0}
+                        className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        title={t('Previous') || '上一首'}
+                      >
+                        <FontAwesomeIcon icon="chevron-left" className="h-3 w-3 text-gray-600 dark:text-gray-400" />
+                      </button>
+                      
+                      <span className="text-sm text-gray-500 dark:text-gray-400 font-medium min-w-[60px] text-center">
+                        {playlist.findIndex(item => item.name === currentFile.name) + 1} / {playlist.length}
+                      </span>
+                      
+                      <button
+                        onClick={() => {
+                          const currentIndex = playlist.findIndex(item => item.name === currentFile.name)
+                          if (currentIndex < playlist.length - 1) {
+                            handlePlaylistItemClick(playlist[currentIndex + 1].file)()
+                          }
+                        }}
+                        disabled={playlist.findIndex(item => item.name === currentFile.name) === playlist.length - 1}
+                        className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        title={t('Next') || '下一首'}
+                      >
+                        <FontAwesomeIcon icon="chevron-right" className="h-3 w-3 text-gray-600 dark:text-gray-400" />
+                      </button>
+                    </div>
+                  )}
+                  
+                  {playlist.length <= 1 && (
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      1 / 1
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
