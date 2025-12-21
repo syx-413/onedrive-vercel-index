@@ -6,6 +6,7 @@ import 'react-h5-audio-player/lib/styles.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useTranslation } from 'next-i18next'
 import { useRouter } from 'next/router'
+import Image from 'next/image'
 
 import DownloadButtonGroup from '../DownloadBtnGtoup'
 import { DownloadBtnContainer, PreviewContainer } from './Containers'
@@ -56,7 +57,7 @@ const extractColorFromImage = (imgElement: HTMLImageElement): Promise<string> =>
       
       resolve(`rgb(${r}, ${g}, ${b})`)
     } else {
-      resolve('rgb(239, 68, 68)')
+      resolve('rgb(68, 159, 239)')
     }
   })
 }
@@ -84,34 +85,31 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
   const [themeColor, setThemeColor] = useState('rgb(239, 68, 68)')
   const [currentFile, setCurrentFile] = useState<OdFileObject>(file)
   const [playlist, setPlaylist] = useState<Array<{ name: string; file: any }>>([])
+  const [isLoadingPlaylist, setIsLoadingPlaylist] = useState(true)
 
   const thumbnail = `/api/thumbnail/?path=${asPath}&size=medium${hashedToken ? `&odpt=${hashedToken}` : ''}`
   const [brokenThumbnail, setBrokenThumbnail] = useState(false)
 
   // 自动加载所有分页数据
   useEffect(() => {
-    if (!folderData) return
-    
-    const responses: any[] = [].concat(...folderData)
-    const lastResponse = responses[responses.length - 1]
-    
-    // 如果还有下一页且 next 不是 undefined，自动加载
-    if (lastResponse?.next && lastResponse.next !== 'undefined') {
-      setSize(size + 1)
+    if (folderData) {
+      const responses: any[] = [].concat(...folderData)
+      const lastResponse = responses[responses.length - 1]
+      
+      // 如果还有下一页，自动加载
+      if (lastResponse?.next) {
+        setSize(size + 1)
+      } else {
+        // 所有数据加载完成
+        setIsLoadingPlaylist(false)
+      }
     }
   }, [folderData, size, setSize])
 
   // 处理目录数据，提取音频文件列表
   useEffect(() => {
-    if (!folderData) return
-    
-    const responses: any[] = [].concat(...folderData)
-    
-    // 检查是否还在加载中
-    const lastResponse = responses[responses.length - 1]
-    const isLoading = lastResponse?.next && lastResponse.next !== 'undefined'
-    
-    if (!isLoading) {
+    if (folderData && !isLoadingPlaylist) {
+      const responses: any[] = [].concat(...folderData)
       const allFiles = [].concat(...responses.map((r: any) => r.folder?.value || []))
       
       // 筛选音频文件
@@ -122,7 +120,7 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
         file: f,
       })))
     }
-  }, [folderData])
+  }, [folderData, isLoadingPlaylist])
 
   useEffect(() => {
     const rap = rapRef.current?.audio.current
@@ -190,7 +188,7 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
 
                 {/* 专辑封面 */}
                 {!brokenThumbnail ? (
-                  <img
+                 <Image
                     ref={imgRef}
                     className={`h-full w-full object-cover transition-transform duration-500 ${
                       playerStatus === PlayerState.Playing ? 'scale-105' : 'scale-100'
@@ -262,7 +260,27 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
                   } as React.CSSProperties}
                 />
 
-                {/* 播放控制和状态信息 */}
+                {/* 音量控制 */}
+                <div className="flex items-center space-x-3 rounded-xl bg-gray-100 dark:bg-gray-800/50 px-4 py-3 backdrop-blur-sm">
+                  <FontAwesomeIcon 
+                    icon={playerVolume > 0 ? "volume-up" : "volume-mute"} 
+                    className="h-4 w-4 text-gray-500 dark:text-gray-400"
+                  />
+                  <div className="flex-1 h-1 rounded-full bg-gray-300 dark:bg-gray-700">
+                    <div 
+                      className="h-full rounded-full transition-all duration-200"
+                      style={{ 
+                        width: `${playerVolume * 100}%`,
+                        backgroundColor: themeColor
+                      }}
+                    />
+                  </div>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 w-8 text-right">
+                    {Math.round(playerVolume * 100)}%
+                  </span>
+                </div>
+
+                {/* 播放状态信息 */}
                 <div className="flex items-center justify-between rounded-xl bg-gray-100 dark:bg-gray-800/50 px-4 py-3 backdrop-blur-sm">
                   <div className="flex items-center space-x-2">
                     <div 
@@ -278,48 +296,9 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
                        t('Paused') || '已暂停'}
                     </span>
                   </div>
-                  
-                  {playlist.length > 1 && (
-                    <div className="flex items-center space-x-3">
-                      <button
-                        onClick={() => {
-                          const currentIndex = playlist.findIndex(item => item.name === currentFile.name)
-                          if (currentIndex > 0) {
-                            handlePlaylistItemClick(playlist[currentIndex - 1].file)()
-                          }
-                        }}
-                        disabled={playlist.findIndex(item => item.name === currentFile.name) === 0}
-                        className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                        title={t('Previous') || '上一首'}
-                      >
-                        <FontAwesomeIcon icon="chevron-left" className="h-3 w-3 text-gray-600 dark:text-gray-400" />
-                      </button>
-                      
-                      <span className="text-sm text-gray-500 dark:text-gray-400 font-medium min-w-[60px] text-center">
-                        {playlist.findIndex(item => item.name === currentFile.name) + 1} / {playlist.length}
-                      </span>
-                      
-                      <button
-                        onClick={() => {
-                          const currentIndex = playlist.findIndex(item => item.name === currentFile.name)
-                          if (currentIndex < playlist.length - 1) {
-                            handlePlaylistItemClick(playlist[currentIndex + 1].file)()
-                          }
-                        }}
-                        disabled={playlist.findIndex(item => item.name === currentFile.name) === playlist.length - 1}
-                        className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                        title={t('Next') || '下一首'}
-                      >
-                        <FontAwesomeIcon icon="chevron-right" className="h-3 w-3 text-gray-600 dark:text-gray-400" />
-                      </button>
-                    </div>
-                  )}
-                  
-                  {playlist.length <= 1 && (
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      1 / 1
-                    </div>
-                  )}
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    {playlist.length > 0 && `${playlist.findIndex(item => item.name === currentFile.name) + 1} / ${playlist.length}`}
+                  </div>
                 </div>
               </div>
             </div>
