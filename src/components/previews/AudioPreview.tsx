@@ -1,5 +1,6 @@
 import type { OdFileObject } from '../../types'
 import { FC, useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 
 import AudioPlayer, { RHAP_UI } from 'react-h5-audio-player'
 import 'react-h5-audio-player/lib/styles.css'
@@ -66,6 +67,29 @@ const isAudioFile = (mimeType: string) => {
   return mimeType.startsWith('audio/')
 }
 
+// 解析LRC歌词格式
+const parseLRC = (lrcText: string) => {
+  const lines = lrcText.split('\n')
+  const lyrics: Array<{ time: number; text: string }> = []
+  
+  lines.forEach(line => {
+    // 匹配 [mm:ss.xx] 或 [mm:ss] 格式
+    const match = line.match(/\[(\d{2}):(\d{2})\.?(\d{2,3})?\](.*)/)
+    if (match) {
+      const minutes = parseInt(match[1])
+      const seconds = parseInt(match[2])
+      const milliseconds = match[3] ? parseInt(match[3].padEnd(3, '0')) : 0
+      const time = minutes * 60 + seconds + milliseconds / 1000
+      const text = match[4].trim()
+      if (text) {
+        lyrics.push({ time, text })
+      }
+    }
+  })
+  
+  return lyrics.sort((a, b) => a.time - b.time)
+}
+
 const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
   const { t } = useTranslation()
   const { asPath } = useRouter()
@@ -78,40 +102,104 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
   const { data: folderData, size, setSize } = useProtectedSWRInfinite(currentPath)
 
   const rapRef = useRef<AudioPlayer>(null)
-  const imgRef = useRef<HTMLImageElement>(null)
   const [playerStatus, setPlayerStatus] = useState(PlayerState.Loading)
   const [playerVolume, setPlayerVolume] = useState(1)
   const [themeColor, setThemeColor] = useState('rgb(239, 68, 68)')
   const [currentFile, setCurrentFile] = useState<OdFileObject>(file)
   const [playlist, setPlaylist] = useState<Array<{ name: string; file: any }>>([])
+  const [isLoadingPlaylist, setIsLoadingPlaylist] = useState(true)
+  const [lyrics, setLyrics] = useState<Array<{ time: number; text: string }>>([])
+  const [currentLyricIndex, setCurrentLyricIndex] = useState(-1)
+  const [hasLyrics, setHasLyrics] = useState<boolean | null>(null)
+  const lyricContainerRef = useRef<HTMLDivElement>(null)
 
   const thumbnail = `/api/thumbnail/?path=${asPath}&size=medium${hashedToken ? `&odpt=${hashedToken}` : ''}`
   const [brokenThumbnail, setBrokenThumbnail] = useState(false)
 
   // 自动加载所有分页数据
+  // 获取歌词文件
+  const fetchLyrics = async (fileName: string) => {
+    setHasLyrics(null)
+    setLyrics([])
+    setCurrentLyricIndex(-1)
+    
+    // 将音频文件扩展名替换为 .lrc
+    const lrcFileName = fileName.replace(/\.[^.]+$/, '.lrc')
+    const lrcPath = `${currentPath}/${encodeURIComponent(lrcFileName)}`
+    
+    try {
+      const response = await fetch(`/api/raw/?path=${lrcPath}${hashedToken ? `&odpt=${hashedToken}` : ''}`)
+      if (response.ok) {
+        const lrcText = await response.text()
+        const parsedLyrics = parseLRC(lrcText)
+        setLyrics(parsedLyrics)
+        setHasLyrics(parsedLyrics.length > 0)
+      } else {
+        setHasLyrics(false)
+      }
+    } catch (error) {
+      setHasLyrics(false)
+    }
+  }
+
+  // 当切换歌曲时获取歌词
   useEffect(() => {
-    if (!folderData) return
-    
-    const responses: any[] = [].concat(...folderData)
-    const lastResponse = responses[responses.length - 1]
-    
-    // 如果还有下一页且 next 不是 undefined，自动加载
-    if (lastResponse?.next && lastResponse.next !== 'undefined') {
-      setSize(size + 1)
+    fetchLyrics(currentFile.name)
+  }, [currentFile.name])
+
+  // 监听播放时间，更新当前歌词
+  useEffect(() => {
+    const rap = rapRef.current?.audio.current
+    if (!rap || lyrics.length === 0) return
+
+    const updateLyric = () => {
+      const currentTime = rap.currentTime
+      let index = -1
+      
+      for (let i = 0; i < lyrics.length; i++) {
+        if (currentTime >= lyrics[i].time) {
+          index = i
+        } else {
+          break
+        }
+      }
+      
+      if (index !== currentLyricIndex) {
+        setCurrentLyricIndex(index)
+        
+        // 自动滚动到当前歌词
+        if (lyricContainerRef.current && index >= 0) {
+          const lyricElement = lyricContainerRef.current.children[index] as HTMLElement
+          if (lyricElement) {
+            lyricElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }
+        }
+      }
+    }
+
+    const intervalId = setInterval(updateLyric, 100)
+    return () => clearInterval(intervalId)
+  }, [lyrics, currentLyricIndex])
+
+  useEffect(() => {
+    if (folderData) {
+      const responses: any[] = [].concat(...folderData)
+      const lastResponse = responses[responses.length - 1]
+      
+      // 如果还有下一页，自动加载
+      if (lastResponse?.next) {
+        setSize(size + 1)
+      } else {
+        // 所有数据加载完成
+        setIsLoadingPlaylist(false)
+      }
     }
   }, [folderData, size, setSize])
 
   // 处理目录数据，提取音频文件列表
   useEffect(() => {
-    if (!folderData) return
-    
-    const responses: any[] = [].concat(...folderData)
-    
-    // 检查是否还在加载中
-    const lastResponse = responses[responses.length - 1]
-    const isLoading = lastResponse?.next && lastResponse.next !== 'undefined'
-    
-    if (!isLoading) {
+    if (folderData && !isLoadingPlaylist) {
+      const responses: any[] = [].concat(...folderData)
       const allFiles = [].concat(...responses.map((r: any) => r.folder?.value || []))
       
       // 筛选音频文件
@@ -122,7 +210,7 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
         file: f,
       })))
     }
-  }, [folderData])
+  }, [folderData, isLoadingPlaylist])
 
   useEffect(() => {
     const rap = rapRef.current?.audio.current
@@ -147,9 +235,9 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
     }
   }, [currentFile, playlist])
 
-  const handleImageLoad = async () => {
-    if (imgRef.current) {
-      const color = await extractColorFromImage(imgRef.current)
+  const handleImageLoad = async (img: HTMLImageElement) => {
+    if (img.naturalWidth > 0) {
+      const color = await extractColorFromImage(img)
       setThemeColor(color)
     }
   }
@@ -190,17 +278,20 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
 
                 {/* 专辑封面 */}
                 {!brokenThumbnail ? (
-                  <img
-                    ref={imgRef}
-                    className={`h-full w-full object-cover transition-transform duration-500 ${
-                      playerStatus === PlayerState.Playing ? 'scale-105' : 'scale-100'
-                    }`}
-                    src={currentThumbnail}
-                    alt={currentFile.name}
-                    onError={() => setBrokenThumbnail(true)}
-                    onLoad={handleImageLoad}
-                    crossOrigin="anonymous"
-                  />
+                  <div className="relative h-full w-full">
+                    <Image
+                      className={`object-cover transition-transform duration-500 ${
+                        playerStatus === PlayerState.Playing ? 'scale-105' : 'scale-100'
+                      }`}
+                      src={currentThumbnail}
+                      alt={currentFile.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 320px"
+                      onError={() => setBrokenThumbnail(true)}
+                      onLoadingComplete={(img) => handleImageLoad(img)}
+                      unoptimized
+                    />
+                  </div>
                 ) : (
                   <div 
                     className="flex h-full w-full items-center justify-center"
@@ -324,6 +415,49 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
               </div>
             </div>
           </div>
+
+          {/* 歌词显示区域 */}
+          {hasLyrics !== null && (
+            <div className="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white flex items-center space-x-2">
+                  <FontAwesomeIcon icon="file-lines" className="h-4 w-4" />
+                  <span>{t('Lyrics') || '歌词'}</span>
+                </h3>
+              </div>
+              
+              <div className="max-h-[400px] overflow-y-auto p-6" ref={lyricContainerRef}>
+                {hasLyrics ? (
+                  <div className="space-y-4">
+                    {lyrics.map((lyric, index) => (
+                      <div
+                        key={index}
+                        className={`transition-all duration-300 text-center py-2 px-4 rounded-lg ${
+                          index === currentLyricIndex
+                            ? 'text-lg font-semibold scale-105'
+                            : 'text-sm text-gray-500 dark:text-gray-400'
+                        }`}
+                        style={index === currentLyricIndex ? {
+                          color: themeColor,
+                          backgroundColor: `${themeColor}10`,
+                        } : {}}
+                      >
+                        {lyric.text}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-gray-400 dark:text-gray-500">
+                    <FontAwesomeIcon icon="music" className="h-12 w-12 mb-4 opacity-30" />
+                    <p>{t('No lyrics available') || '暂无歌词'}</p>
+                    <p className="text-xs mt-2">
+                      {t('Place a .lrc file with the same name as the audio file') || '请在同目录下放置同名的 .lrc 歌词文件'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* 播放列表 */}
           {playlist.length > 1 && (
