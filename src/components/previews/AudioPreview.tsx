@@ -571,7 +571,7 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
         <DownloadButtonGroup />
       </DownloadBtnContainer>
 
-      <style jsx>{`
+      <style jsx global>{`
         @keyframes pulse {
           0%, 100% {
             opacity: 1;
@@ -582,27 +582,41 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
         }
         
         /* 自定义滚动条样式 */
-        :global(.custom-scrollbar::-webkit-scrollbar) {
-          width: 10px;
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 12px;
         }
         
-        :global(.custom-scrollbar::-webkit-scrollbar-track) {
-          background: rgba(0, 0, 0, 0.05);
-          border-radius: 5px;
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(229, 231, 235, 0.5);
+          border-radius: 6px;
+          margin: 4px;
         }
         
-        :global(.dark .custom-scrollbar::-webkit-scrollbar-track) {
-          background: rgba(255, 255, 255, 0.05);
+        .dark .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(55, 65, 81, 0.5);
         }
         
-        :global(.custom-scrollbar::-webkit-scrollbar-thumb) {
-          background: var(--scroll-color, #ef4444);
-          border-radius: 5px;
-          opacity: 0.7;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: ${themeColor};
+          border-radius: 6px;
+          border: 2px solid transparent;
+          background-clip: padding-box;
         }
         
-        :global(.custom-scrollbar::-webkit-scrollbar-thumb:hover) {
-          opacity: 1;
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: ${themeColor};
+          border: 1px solid transparent;
+          background-clip: padding-box;
+        }
+        
+        /* Firefox 滚动条 */
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: ${themeColor} rgba(229, 231, 235, 0.5);
+        }
+        
+        .dark .custom-scrollbar {
+          scrollbar-color: ${themeColor} rgba(55, 65, 81, 0.5);
         }
       `}</style>
     </>
