@@ -1,4 +1,4 @@
-import { FC, CSSProperties, ReactNode, useState } from 'react'
+import { FC, CSSProperties, ReactNode, useState, useEffect } from 'react' // 务必引入 useEffect
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -9,17 +9,18 @@ import useSystemTheme from 'react-use-system-theme'
 import { PrismAsyncLight as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { prism, oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import axios from 'axios' // 引入 axios，与 useFileContent 保持一致
 
 import 'katex/dist/katex.min.css'
 
 import useFileContent from '../../utils/fetchOnMount'
-import { getStoredToken } from '../../utils/protectedRouteHandler' // 新增引入
+import { getStoredToken } from '../../utils/protectedRouteHandler'
 import FourOhFour from '../FourOhFour'
 import Loading from '../Loading'
 import DownloadButtonGroup from '../DownloadBtnGtoup'
 import { DownloadBtnContainer, PreviewContainer } from './Containers'
 
-// 图片预览模态框组件
+// ... ImagePreviewModal 组件保持不变 ...
 const ImagePreviewModal: FC<{
   src: string
   alt?: string
@@ -59,7 +60,7 @@ const ImagePreviewModal: FC<{
   )
 }
 
-// 优化的图片组件
+// 彻底重写的图片组件：使用 axios 获取 Blob
 const MarkdownImage: FC<{
   src?: string
   alt?: string
@@ -71,22 +72,72 @@ const MarkdownImage: FC<{
 }> = ({ src, alt, title, width, height, style, parentPath }) => {
   const [previewOpen, setPreviewOpen] = useState(false)
   const [imageError, setImageError] = useState(false)
-  
+  const [imgDataUrl, setImgDataUrl] = useState<string>('')
+  const [isLoading, setIsLoading] = useState(true)
+
   const isUrlAbsolute = (url: string) => url.indexOf('://') > 0 || url.indexOf('//') === 0
-  
-  // === 修复开始：获取 Token 并拼接到 URL ===
-  const hashedToken = getStoredToken(parentPath)
-  const imageSrc = isUrlAbsolute(src as string) 
-    ? src 
-    : `/api/?path=${parentPath}/${src}&raw=true${hashedToken ? `&odpt=${hashedToken}` : ''}`
-  // === 修复结束 ===
+
+  useEffect(() => {
+    let active = true
+    const fetchImage = async () => {
+      // 1. 如果是外链，直接显示
+      if (isUrlAbsolute(src as string)) {
+        setImgDataUrl(src as string)
+        setIsLoading(false)
+        return
+      }
+
+      try {
+        setIsLoading(true)
+        
+        // 2. 构造请求路径
+        // 注意：这里我们尝试对每一层目录都查找 Token，或者直接使用父目录的 Token
+        // 为了保险，我们先尝试直接用 parentPath 的 Token
+        const hashedToken = getStoredToken(parentPath)
+        
+        // 构造 API 地址
+        const apiPath = `/api/?path=${parentPath}/${src}&raw=true${hashedToken ? `&odpt=${hashedToken}` : ''}`
+
+        // 3. 使用 Axios 请求 (responseType: 'blob')
+        const response = await axios.get(apiPath, { 
+          responseType: 'blob',
+          validateStatus: (status) => status >= 200 && status < 400 // 防止 304 被当做错误
+        })
+
+        if (active) {
+          const objectUrl = URL.createObjectURL(response.data)
+          setImgDataUrl(objectUrl)
+          setIsLoading(false)
+        }
+      } catch (err) {
+        console.error('Image load failed:', err)
+        if (active) {
+          // 如果 axios 失败，作为最后的手段，尝试直接构建 URL
+          // 这在某些极端缓存情况下可能有效
+          const hashedToken = getStoredToken(parentPath)
+          const fallbackUrl = `/api/?path=${parentPath}/${src}&raw=true${hashedToken ? `&odpt=${hashedToken}` : ''}`
+          setImgDataUrl(fallbackUrl)
+          // 不设置 isLoading(false)，交给 img 标签的 onError 处理
+        }
+      }
+    }
+
+    fetchImage()
+
+    return () => {
+      active = false
+      if (imgDataUrl && imgDataUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(imgDataUrl)
+      }
+    }
+  }, [src, parentPath])
 
   if (imageError) {
     return (
       <div className="my-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-center">
         <FontAwesomeIcon icon="image" className="h-8 w-8 text-red-400 mb-2" />
         <p className="text-sm text-red-600 dark:text-red-400">图片加载失败</p>
-        {alt && <p className="text-xs text-gray-500 mt-1">{alt}</p>}
+        <p className="text-xs text-gray-400">{src}</p>
       </div>
     )
   }
@@ -94,24 +145,33 @@ const MarkdownImage: FC<{
   return (
     <>
       <div className="my-6 flex flex-col items-center">
+        {/* 加载中状态 */}
+        {isLoading && !imgDataUrl && (
+          <div className="w-full h-48 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse flex items-center justify-center">
+             <FontAwesomeIcon icon="spinner" spin className="text-gray-400 h-8 w-8" />
+          </div>
+        )}
+
         <div 
-          className="relative group cursor-zoom-in max-w-full overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300"
+          className={`relative group cursor-zoom-in max-w-full overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 ${isLoading ? 'hidden' : 'block'}`}
           onClick={() => setPreviewOpen(true)}
         >
-          {/* 图片容器 */}
           <img
-            src={imageSrc}
+            src={imgDataUrl}
             alt={alt || ''}
             title={title}
             width={width}
             height={height}
             style={style}
-            onError={() => setImageError(true)}
+            onLoad={() => setIsLoading(false)}
+            onError={() => {
+               setIsLoading(false)
+               setImageError(true)
+            }}
             className="max-w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
           />
-          
-          {/* 悬停提示 */}
-          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
+           {/* 悬停提示 */}
+           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center pointer-events-none">
             <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-lg">
               <FontAwesomeIcon icon="search-plus" className="mr-2 text-gray-700 dark:text-gray-300" />
               <span className="text-sm text-gray-700 dark:text-gray-300">点击查看大图</span>
@@ -119,18 +179,16 @@ const MarkdownImage: FC<{
           </div>
         </div>
         
-        {/* 图片说明 */}
-        {(alt || title) && (
+        {(alt || title) && !imageError && (
           <p className="mt-3 text-sm text-gray-600 dark:text-gray-400 text-center max-w-2xl italic">
             {alt || title}
           </p>
         )}
       </div>
 
-      {/* 预览模态框 */}
       {previewOpen && (
         <ImagePreviewModal
-          src={imageSrc as string}
+          src={imgDataUrl}
           alt={alt}
           onClose={() => setPreviewOpen(false)}
         />
@@ -139,6 +197,7 @@ const MarkdownImage: FC<{
   )
 }
 
+// ... MarkdownPreview 主组件保持不变 ...
 const MarkdownPreview: FC<{
   file: any
   path: string
@@ -152,7 +211,6 @@ const MarkdownPreview: FC<{
 
   // Custom renderer:
   const customRenderer = {
-    // 优化的图片渲染
     img: (props: {
       alt?: string
       src?: string
@@ -164,7 +222,6 @@ const MarkdownPreview: FC<{
       return <MarkdownImage {...props} parentPath={parentPath} />
     },
     
-    // 代码块渲染
     code({
       className,
       children,
