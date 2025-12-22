@@ -260,7 +260,7 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
   return (
     <>
       <PreviewContainer>
-        <div className="flex flex-col lg:flex-row lg:space-x-6 space-y-6 lg:space-y-0">
+        <div className="flex flex-col lg:flex-row lg:space-x-6 space-y-6 lg:space-y-0" style={{ '--scroll-color': themeColor } as React.CSSProperties}>
           {/* 左侧：播放器主区域 */}
           <div className="lg:w-2/5 flex flex-col space-y-4">
             {/* 专辑封面 */}
@@ -461,7 +461,7 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
               <div className="flex-1 overflow-hidden">
                 {/* 播放列表内容 */}
                 {activeTab === 'playlist' && (
-                  <div className="h-full overflow-y-auto">
+                  <div className="h-full overflow-y-auto custom-scrollbar">
                     {playlist.map((item, index) => {
                       const isCurrentTrack = item.name === currentFile.name
                       return (
@@ -531,7 +531,7 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
 
                 {/* 歌词内容 */}
                 {activeTab === 'lyrics' && (
-                  <div className="h-full overflow-y-auto p-6" ref={lyricContainerRef}>
+                  <div className="h-full overflow-y-auto p-6 custom-scrollbar" ref={lyricContainerRef}>
                     {showLyrics && lyrics.length > 0 ? (
                       <div className="space-y-4">
                         {lyrics.map((lyric, index) => (
@@ -579,6 +579,30 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
           50% {
             opacity: 0.5;
           }
+        }
+        
+        /* 自定义滚动条样式 */
+        :global(.custom-scrollbar::-webkit-scrollbar) {
+          width: 10px;
+        }
+        
+        :global(.custom-scrollbar::-webkit-scrollbar-track) {
+          background: rgba(0, 0, 0, 0.05);
+          border-radius: 5px;
+        }
+        
+        :global(.dark .custom-scrollbar::-webkit-scrollbar-track) {
+          background: rgba(255, 255, 255, 0.05);
+        }
+        
+        :global(.custom-scrollbar::-webkit-scrollbar-thumb) {
+          background: var(--scroll-color, #ef4444);
+          border-radius: 5px;
+          opacity: 0.7;
+        }
+        
+        :global(.custom-scrollbar::-webkit-scrollbar-thumb:hover) {
+          opacity: 1;
         }
       `}</style>
     </>
