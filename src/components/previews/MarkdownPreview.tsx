@@ -1,4 +1,4 @@
-import { FC, CSSProperties, ReactNode } from 'react'
+import { FC, CSSProperties, ReactNode, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -8,6 +8,7 @@ import { useTranslation } from 'next-i18next'
 import useSystemTheme from 'react-use-system-theme'
 import { PrismAsyncLight as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { prism, oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import 'katex/dist/katex.min.css'
 
@@ -17,31 +18,135 @@ import Loading from '../Loading'
 import DownloadButtonGroup from '../DownloadBtnGtoup'
 import { DownloadBtnContainer, PreviewContainer } from './Containers'
 
+// 图片预览模态框组件
+const ImagePreviewModal: FC<{
+  src: string
+  alt?: string
+  onClose: () => void
+}> = ({ src, alt, onClose }) => {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-10"
+        aria-label="Close preview"
+      >
+        <FontAwesomeIcon icon="times" className="h-8 w-8" />
+      </button>
+      
+      <div className="relative max-w-7xl max-h-full" onClick={(e) => e.stopPropagation()}>
+        <img
+          src={src}
+          alt={alt || ''}
+          className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+        />
+        {alt && (
+          <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white p-4 rounded-b-lg">
+            <p className="text-center text-sm">{alt}</p>
+          </div>
+        )}
+      </div>
+      
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm opacity-70">
+        <FontAwesomeIcon icon="search-minus" className="mr-2" />
+        点击图片外区域关闭
+      </div>
+    </div>
+  )
+}
+
+// 优化的图片组件
+const MarkdownImage: FC<{
+  src?: string
+  alt?: string
+  title?: string
+  width?: string | number
+  height?: string | number
+  style?: CSSProperties
+  parentPath: string
+}> = ({ src, alt, title, width, height, style, parentPath }) => {
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [imageError, setImageError] = useState(false)
+  
+  const isUrlAbsolute = (url: string) => url.indexOf('://') > 0 || url.indexOf('//') === 0
+  const imageSrc = isUrlAbsolute(src as string) ? src : `/api/?path=${parentPath}/${src}&raw=true`
+
+  if (imageError) {
+    return (
+      <div className="my-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-center">
+        <FontAwesomeIcon icon="image" className="h-8 w-8 text-red-400 mb-2" />
+        <p className="text-sm text-red-600 dark:text-red-400">图片加载失败</p>
+        {alt && <p className="text-xs text-gray-500 mt-1">{alt}</p>}
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <div className="my-6 flex flex-col items-center">
+        <div 
+          className="relative group cursor-zoom-in max-w-full overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300"
+          onClick={() => setPreviewOpen(true)}
+        >
+          {/* 图片容器 */}
+          <img
+            src={imageSrc}
+            alt={alt || ''}
+            title={title}
+            width={width}
+            height={height}
+            style={style}
+            onError={() => setImageError(true)}
+            className="max-w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+          />
+          
+          {/* 悬停提示 */}
+          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-lg">
+              <FontAwesomeIcon icon="search-plus" className="mr-2 text-gray-700 dark:text-gray-300" />
+              <span className="text-sm text-gray-700 dark:text-gray-300">点击查看大图</span>
+            </div>
+          </div>
+        </div>
+        
+        {/* 图片说明 */}
+        {(alt || title) && (
+          <p className="mt-3 text-sm text-gray-600 dark:text-gray-400 text-center max-w-2xl italic">
+            {alt || title}
+          </p>
+        )}
+      </div>
+
+      {/* 预览模态框 */}
+      {previewOpen && (
+        <ImagePreviewModal
+          src={imageSrc as string}
+          alt={alt}
+          onClose={() => setPreviewOpen(false)}
+        />
+      )}
+    </>
+  )
+}
+
 const MarkdownPreview: FC<{
   file: any
   path: string
   standalone?: boolean
 }> = ({ file, path, standalone = true }) => {
   const theme = useSystemTheme('dark')
-  // The parent folder of the markdown file, which is also the relative image folder
   const parentPath = standalone ? path.substring(0, path.lastIndexOf('/')) : path
 
   const { response: content, error, validating } = useFileContent(`/api/raw/?path=${parentPath}/${file.name}`, path)
   const { t } = useTranslation()
 
-  // Check if the image is relative path instead of a absolute url
-  const isUrlAbsolute = (url: string | string[]) => url.indexOf('://') > 0 || url.indexOf('//') === 0
   // Custom renderer:
   const customRenderer = {
-    // img: to render images in markdown with relative file paths
-    img: ({
-      alt,
-      src,
-      title,
-      width,
-      height,
-      style,
-    }: {
+    // 优化的图片渲染
+    img: (props: {
       alt?: string
       src?: string
       title?: string
@@ -49,19 +154,10 @@ const MarkdownPreview: FC<{
       height?: string | number
       style?: CSSProperties
     }) => {
-      return (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          alt={alt}
-          src={isUrlAbsolute(src as string) ? src : `/api/?path=${parentPath}/${src}&raw=true`}
-          title={title}
-          width={width}
-          height={height}
-          style={style}
-        />
-      )
+      return <MarkdownImage {...props} parentPath={parentPath} />
     },
-    // code: to render code blocks with react-syntax-highlighter
+    
+    // 代码块渲染
     code({
       className,
       children,
@@ -103,6 +199,7 @@ const MarkdownPreview: FC<{
       </PreviewContainer>
     )
   }
+  
   if (validating) {
     return (
       <>
@@ -122,13 +219,9 @@ const MarkdownPreview: FC<{
     <div>
       <PreviewContainer>
         <div className="markdown-body">
-          {/* Using rehypeRaw to render HTML inside Markdown is potentially dangerous, use under safe environments. (#18) */}
           <ReactMarkdown
             // @ts-ignore
             remarkPlugins={[remarkGfm, remarkMath]}
-            // The type error is introduced by caniuse-lite upgrade.
-            // Since type errors occur often in remark toolchain and the use is so common,
-            // ignoring it shoudld be safe enough.
             // @ts-ignore
             rehypePlugins={[rehypeKatex, rehypeRaw]}
             components={customRenderer}
