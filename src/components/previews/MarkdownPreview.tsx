@@ -13,6 +13,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import 'katex/dist/katex.min.css'
 
 import useFileContent from '../../utils/fetchOnMount'
+import { getStoredToken } from '../../utils/protectedRouteHandler' // 新增引入
 import FourOhFour from '../FourOhFour'
 import Loading from '../Loading'
 import DownloadButtonGroup from '../DownloadBtnGtoup'
@@ -72,7 +73,13 @@ const MarkdownImage: FC<{
   const [imageError, setImageError] = useState(false)
   
   const isUrlAbsolute = (url: string) => url.indexOf('://') > 0 || url.indexOf('//') === 0
-  const imageSrc = isUrlAbsolute(src as string) ? src : `/api/?path=${parentPath}/${src}&raw=true`
+  
+  // === 修复开始：获取 Token 并拼接到 URL ===
+  const hashedToken = getStoredToken(parentPath)
+  const imageSrc = isUrlAbsolute(src as string) 
+    ? src 
+    : `/api/?path=${parentPath}/${src}&raw=true${hashedToken ? `&odpt=${hashedToken}` : ''}`
+  // === 修复结束 ===
 
   if (imageError) {
     return (
