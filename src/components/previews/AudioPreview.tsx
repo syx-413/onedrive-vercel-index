@@ -130,7 +130,7 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
       try {
         const res = await fetch(`/api/raw/?path=${lrcPath}${hashedToken ? `&odpt=${hashedToken}` : ''}`)
         if (res.ok) setLyrics(parseLRC(await res.text()))
-      } catch (e) {}
+      } catch (e) { }
     }
     fetchLyrics()
   }, [currentFile.name, currentPath, hashedToken])
@@ -170,7 +170,7 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
     <>
       <PreviewContainer>
         <div className="flex flex-col space-y-6" style={{ '--theme-color': themeColor } as React.CSSProperties}>
-          
+
           {/* 上方区域：封面与控制 */}
           <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8 p-2">
             {/* 封面图 */}
@@ -227,7 +227,7 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
                 </div>
                 {playlist.length > 1 && (
                   <div className="flex items-center space-x-4">
-                    <button 
+                    <button
                       disabled={playlist.findIndex(i => i.name === currentFile.name) === 0}
                       onClick={() => handlePlaylistItemClick(playlist[playlist.findIndex(i => i.name === currentFile.name) - 1].file)()}
                       className="hover:scale-110 disabled:opacity-30 transition-transform"
@@ -237,7 +237,7 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
                     <span className="text-xs font-mono font-bold">
                       {playlist.findIndex(i => i.name === currentFile.name) + 1} / {playlist.length}
                     </span>
-                    <button 
+                    <button
                       disabled={playlist.findIndex(i => i.name === currentFile.name) === playlist.length - 1}
                       onClick={() => handlePlaylistItemClick(playlist[playlist.findIndex(i => i.name === currentFile.name) + 1].file)()}
                       className="hover:scale-110 disabled:opacity-30 transition-transform"
@@ -253,24 +253,36 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
           {/* 下方区域：列表与歌词 (固定高度) */}
           <div className="w-full bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden flex flex-col h-[450px]">
             {/* Tab 切换 */}
+            {/* Tab 切换 */}
             <div className="flex bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
               <button
                 onClick={() => setActiveTab('playlist')}
-                className={`flex-1 py-4 text-sm font-bold transition-relative ${activeTab === 'playlist' ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}
+                // 关键点：添加了 relative 确保下划线只在按钮内部显示
+                className={`relative flex-1 py-4 text-sm font-bold transition-colors ${activeTab === 'playlist' ? 'text-gray-900 dark:text-white' : 'text-gray-400'
+                  }`}
               >
                 <FontAwesomeIcon icon="list-ul" className="mr-2" />
                 {t('Playlist')}
-                {activeTab === 'playlist' && <div className="absolute bottom-0 left-0 right-0 h-1" style={{ backgroundColor: themeColor }} />}
+                {/* 确保这里有 activeTab 判断 */}
+                {activeTab === 'playlist' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 z-10" style={{ backgroundColor: themeColor }} />
+                )}
               </button>
+
               <button
                 onClick={() => setActiveTab('lyrics')}
-                className={`flex-1 py-4 text-sm font-bold transition-relative ${activeTab === 'lyrics' ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}
+                // 关键点：添加了 relative
+                className={`relative flex-1 py-4 text-sm font-bold transition-colors ${activeTab === 'lyrics' ? 'text-gray-900 dark:text-white' : 'text-gray-400'
+                  }`}
               >
                 <FontAwesomeIcon icon="quote-right" className="mr-2" />
                 {t('Lyrics')}
-                {activeTab === 'lyrics' && <div className="absolute bottom-0 left-0 right-0 h-1" style={{ backgroundColor: themeColor }} />}
+                {activeTab === 'lyrics' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 z-10" style={{ backgroundColor: themeColor }} />
+                )}
               </button>
             </div>
+
 
             {/* 内容滚动区 */}
             <div className="flex-1 overflow-y-auto custom-scrollbar">
