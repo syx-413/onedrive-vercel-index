@@ -106,7 +106,7 @@ importers:
         version: 3.10.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-hot-toast:
         specifier: ^2.4.0
-        version: 2.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-hotkeys-hook:
         specifier: ^4.3.3
         version: 4.6.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1874,8 +1874,8 @@ packages:
     resolution: {integrity: sha512-jhIXaOzy1sb8IyocaruWSn1TjmnBVs8Ayhcy83rmxNJ8q2uWKCAj3CnJY+KpGSXCueAPc0i05kVvVKtP1t9S3g==}
     engines: {node: '>=10'}
 
-  goober@2.1.16:
-    resolution: {integrity: sha512-erjk19y1U33+XAMe1VTvIONHYoSqE4iS7BYUZfHaqeohLmnC0FdxEh7rQU+6MZ4OajItzjZFSRtVANrQwNq6/g==}
+  goober@2.1.18:
+    resolution: {integrity: sha512-2vFqsaDVIT9Gz7N6kAL++pLpp41l3PfDuusHcjnGLfR6+huZkl6ziX+zgVC3ZxpqWhzH6pyDdGrCeDhMIvwaxw==}
     peerDependencies:
       csstype: ^3.0.10
 
@@ -2927,8 +2927,8 @@ packages:
       react: ^16.3.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.3.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  react-hot-toast@2.5.2:
-    resolution: {integrity: sha512-Tun3BbCxzmXXM7C+NI4qiv6lT0uwGh4oAfeJyNOjYUejTsm35mK9iCaYLGv8cBz9L5YxZLx/2ii7zsIwPtPUdw==}
+  react-hot-toast@2.6.0:
+    resolution: {integrity: sha512-bH+2EBMZ4sdyou/DPrfgIouFpcRLCJ+HoCA32UoAYHn6T3Ur5yfcDCeSr5mwldl6pFOsiocmrXMuoCJ1vV8bWg==}
     engines: {node: '>=10'}
     peerDependencies:
       react: '>=16'
@@ -5371,7 +5371,7 @@ snapshots:
       merge2: 1.4.1
       slash: 3.0.0
 
-  goober@2.1.16(csstype@3.2.3):
+  goober@2.1.18(csstype@3.2.3):
     dependencies:
       csstype: 3.2.3
 
@@ -6624,10 +6624,10 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  react-hot-toast@2.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  react-hot-toast@2.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       csstype: 3.2.3
-      goober: 2.1.16(csstype@3.2.3)
+      goober: 2.1.18(csstype@3.2.3)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
