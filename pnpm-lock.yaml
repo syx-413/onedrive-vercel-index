@@ -73,7 +73,7 @@ importers:
         version: 15.4.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       next-i18next:
         specifier: ^15.0.0
-        version: 15.4.3(@types/react@18.3.27)(i18next@25.7.3(typescript@5.8.3))(next@15.4.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-i18next@15.5.2(i18next@25.7.3(typescript@5.8.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3))(react@18.3.1)
+        version: 15.4.3(@types/react@18.3.27)(i18next@25.7.3(typescript@5.8.3))(next@15.4.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-i18next@15.7.4(i18next@25.7.3(typescript@5.8.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3))(react@18.3.1)
       nextjs-progressbar:
         specifier: ^0.0.16
         version: 0.0.16(next@15.4.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
@@ -112,7 +112,7 @@ importers:
         version: 4.6.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-i18next:
         specifier: ^15.0.0
-        version: 15.5.2(i18next@25.7.3(typescript@5.8.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)
+        version: 15.7.4(i18next@25.7.3(typescript@5.8.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)
       react-markdown:
         specifier: ^8.0.5
         version: 8.0.7(@types/react@18.3.27)(react@18.3.1)
@@ -208,16 +208,8 @@ packages:
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
 
-  '@babel/runtime@7.26.10':
-    resolution: {integrity: sha512-2WJMeRQPHKSPemqk/awGrAiuFfzBmOIPXKizAsVhWH9YJqLZ0H+HS4c8loHGgW6utJ3E/ejXQUsiGaQy2NZ9Fw==}
-    engines: {node: '>=6.9.0'}
-
   '@babel/runtime@7.26.9':
     resolution: {integrity: sha512-aA63XwOkcl4xxQa3HjPMqOP6LiK0ZDv3mUPYEFXkpHbaFjtGggE1A61FjFzJnB+p7/oy2gA8E+rcBNl/zC1tMg==}
-    engines: {node: '>=6.9.0'}
-
-  '@babel/runtime@7.27.1':
-    resolution: {integrity: sha512-1x3D2xEk2fRo3PAhwQwu5UubzgiVWSXTBfWpVd2Mx2AzRqJuDJCsgaDVZ7HB5iGzDW1Hl1sWN2mFyKjmR9uAog==}
     engines: {node: '>=6.9.0'}
 
   '@babel/runtime@7.28.4':
@@ -2940,10 +2932,10 @@ packages:
       react: '>=16.8.1'
       react-dom: '>=16.8.1'
 
-  react-i18next@15.5.2:
-    resolution: {integrity: sha512-ePODyXgmZQAOYTbZXQn5rRsSBu3Gszo69jxW6aKmlSgxKAI1fOhDwSu6bT4EKHciWPKQ7v7lPrjeiadR6Gi+1A==}
+  react-i18next@15.7.4:
+    resolution: {integrity: sha512-nyU8iKNrI5uDJch0z9+Y5XEr34b0wkyYj3Rp+tfbahxtlswxSCjcUL9H0nqXo9IR3/t5Y5PKIA3fx3MfUyR9Xw==}
     peerDependencies:
-      i18next: '>= 23.2.3'
+      i18next: '>= 23.4.0'
       react: '>= 16.8.0'
       react-dom: '*'
       react-native: '*'
@@ -3609,15 +3601,9 @@ snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
 
-  '@babel/runtime@7.26.10':
-    dependencies:
-      regenerator-runtime: 0.14.1
-
   '@babel/runtime@7.26.9':
     dependencies:
       regenerator-runtime: 0.14.1
-
-  '@babel/runtime@7.27.1': {}
 
   '@babel/runtime@7.28.4': {}
 
@@ -5580,7 +5566,7 @@ snapshots:
 
   i18next@24.2.3(typescript@5.8.3):
     dependencies:
-      '@babel/runtime': 7.26.10
+      '@babel/runtime': 7.28.4
     optionalDependencies:
       typescript: 5.8.3
 
@@ -6287,7 +6273,7 @@ snapshots:
 
   natural-compare@1.4.0: {}
 
-  next-i18next@15.4.3(@types/react@18.3.27)(i18next@25.7.3(typescript@5.8.3))(next@15.4.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-i18next@15.5.2(i18next@25.7.3(typescript@5.8.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3))(react@18.3.1):
+  next-i18next@15.4.3(@types/react@18.3.27)(i18next@25.7.3(typescript@5.8.3))(next@15.4.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-i18next@15.7.4(i18next@25.7.3(typescript@5.8.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3))(react@18.3.1):
     dependencies:
       '@babel/runtime': 7.28.4
       '@types/hoist-non-react-statics': 3.3.7(@types/react@18.3.27)
@@ -6297,7 +6283,7 @@ snapshots:
       i18next-fs-backend: 2.6.1
       next: 15.4.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
-      react-i18next: 15.5.2(i18next@25.7.3(typescript@5.8.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)
+      react-i18next: 15.7.4(i18next@25.7.3(typescript@5.8.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)
     transitivePeerDependencies:
       - '@types/react'
 
@@ -6636,9 +6622,9 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  react-i18next@15.5.2(i18next@25.7.3(typescript@5.8.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3):
+  react-i18next@15.7.4(i18next@25.7.3(typescript@5.8.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3):
     dependencies:
-      '@babel/runtime': 7.27.1
+      '@babel/runtime': 7.28.4
       html-parse-stringify: 3.0.1
       i18next: 25.7.3(typescript@5.8.3)
       react: 18.3.1
