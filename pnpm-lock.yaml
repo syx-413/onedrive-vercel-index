@@ -117,8 +117,8 @@ importers:
         specifier: ^8.0.5
         version: 8.0.7(@types/react@18.3.27)(react@18.3.1)
       react-reader:
-        specifier: ^1.0.2
-        version: 1.2.2(react@18.3.1)
+        specifier: ^2.0.0
+        version: 2.0.15(react@18.3.1)
       react-syntax-highlighter:
         specifier: ^16.0.0
         version: 16.1.0(react@18.3.1)
@@ -2957,10 +2957,8 @@ packages:
       '@types/react': '>=16'
       react: '>=16'
 
-  react-reader@1.2.2:
-    resolution: {integrity: sha512-eIg0+JS+Wh4CJ9G3SoDnfdYkoZqcTdaYbVxGIkUQVQ7Bb210vWZkUAADTmPM0mLce2oJpfQPlsSkTC1rCDG7wQ==}
-    peerDependencies:
-      react: '>=17.0.2'
+  react-reader@2.0.15:
+    resolution: {integrity: sha512-xc+Mm1GXUxRG1Aa8E2uc1Vku01mwgF+GrDYif0C/J/D0QCWgDqvQx6UDMwjaR5x8Z9gIej9lAs72Tklg7wLBGg==}
 
   react-swipeable@7.0.2:
     resolution: {integrity: sha512-v1Qx1l+aC2fdxKa9aKJiaU/ZxmJ5o98RMoFwUqAAzVWUcxgfHFXDDruCKXhw6zIYXm6V64JiHgP9f6mlME5l8w==}
@@ -4761,7 +4759,7 @@ snapshots:
     dependencies:
       '@types/localforage': 0.0.34
       '@xmldom/xmldom': 0.7.13
-      core-js: 3.47.0
+      core-js: 3.48.0
       event-emitter: 0.3.5
       jszip: 3.10.1
       localforage: 1.10.0
@@ -6632,12 +6630,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  react-reader@1.2.2(react@18.3.1):
+  react-reader@2.0.15(react@18.3.1):
     dependencies:
       epubjs: 0.3.93
-      prop-types: 15.8.1
-      react: 18.3.1
       react-swipeable: 7.0.2(react@18.3.1)
+    transitivePeerDependencies:
+      - react
 
   react-swipeable@7.0.2(react@18.3.1):
     dependencies:
