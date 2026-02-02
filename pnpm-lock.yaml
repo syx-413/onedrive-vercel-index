@@ -144,8 +144,8 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0(react@18.3.1)
       use-constant:
-        specifier: ^1.1.1
-        version: 1.1.1(react@18.3.1)
+        specifier: ^2.0.0
+        version: 2.0.0(react@18.3.1)
     devDependencies:
       '@types/cors':
         specifier: ^2.8.13
@@ -3460,10 +3460,10 @@ packages:
     peerDependencies:
       react: '>=16.8.0'
 
-  use-constant@1.1.1:
-    resolution: {integrity: sha512-sy2ttlE4kuAnNbp2P6a5aTZiGYwsZojkqaGZ31yDDjIurteUS8GOcYiPGmJ3y/LHOHkdazDdVRBZPzH3RZHffA==}
+  use-constant@2.0.0:
+    resolution: {integrity: sha512-Oy0aPHFuM0mMzxQy3wAx1/VVCOWU2dW+88J03/VrkxmpI0XojeHsryCR/6MlnZydb5KKcwj1oS4rZNwdeVo1sg==}
     peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   use-sync-external-store@1.6.0:
     resolution: {integrity: sha512-Pp6GSwGP/NrPIrxVFAIkOQeyw8lFenOHijQWkUTrDvrF4ALqylP2C/KCkeS9dpUM3KvYRQhna5vt7IL95+ZQ9w==}
@@ -7304,7 +7304,7 @@ snapshots:
       clipboard-copy: 3.2.0
       react: 18.3.1
 
-  use-constant@1.1.1(react@18.3.1):
+  use-constant@2.0.0(react@18.3.1):
     dependencies:
       react: 18.3.1
 
