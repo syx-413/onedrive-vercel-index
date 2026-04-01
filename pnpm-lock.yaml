@@ -78,8 +78,8 @@ importers:
         specifier: ^0.0.16
         version: 0.0.16(next@15.5.14(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       plyr-react:
-        specifier: ^5.1.2
-        version: 5.3.0(plyr@3.7.8)(react@18.3.1)
+        specifier: ^6.0.0
+        version: 6.0.0(plyr@3.7.8)(react@18.3.1)
       preview-office-docs:
         specifier: ^1.0.2
         version: 1.0.2(react@18.3.1)
@@ -1038,7 +1038,7 @@ packages:
   '@xmldom/xmldom@0.7.13':
     resolution: {integrity: sha512-lm2GW5PkosIzccsaZIz7tp8cPADSIlIHWDFTR1N0SzfinhhYgeIQjFMz4rYzanCScr3DqQLeomUDArp6MWKm+g==}
     engines: {node: '>=10.0.0'}
-    deprecated: this version is no longer supported, please update to at least 0.8.*
+    deprecated: this version has critical issues, please update to the latest version
 
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
@@ -2773,15 +2773,12 @@ packages:
     resolution: {integrity: sha512-TfySrs/5nm8fQJDcBDuUng3VOUKsd7S+zqvbOTiGXHfxX4wK31ard+hoNuvkicM/2YFzlpDgABOevKSsB4G/FA==}
     engines: {node: '>= 6'}
 
-  plyr-react@5.3.0:
-    resolution: {integrity: sha512-m36/HrpHwg1N2rq3E31E8/kpAH55vk6qHUg17MG4uu9jbWYxnkN39lLmZQwxW7/qpDPfW5aGUJ6R3u23V0R3zA==}
+  plyr-react@6.0.0:
+    resolution: {integrity: sha512-P8M+BuQoGrCd7m6K4QwwQlcSS1E26OeXuJTAmgLx11B9UqJrdc3Ka4TFwPwF3jul4EsVxSK9Zn1ME3DV8m9gdw==}
     engines: {node: '>=16'}
     peerDependencies:
       plyr: ^3.7.7
       react: '>=16.8'
-    peerDependenciesMeta:
-      react:
-        optional: true
 
   plyr@3.7.8:
     resolution: {integrity: sha512-yG/EHDobwbB/uP+4Bm6eUpJ93f8xxHjjk2dYcD1Oqpe1EcuQl5tzzw9Oq+uVAzd2lkM11qZfydSiyIpiB8pgdA==}
@@ -6603,12 +6600,11 @@ snapshots:
 
   pirates@4.0.7: {}
 
-  plyr-react@5.3.0(plyr@3.7.8)(react@18.3.1):
+  plyr-react@6.0.0(plyr@3.7.8)(react@18.3.1):
     dependencies:
       plyr: 3.7.8
-      react-aptor: 2.0.0(react@18.3.1)
-    optionalDependencies:
       react: 18.3.1
+      react-aptor: 2.0.0(react@18.3.1)
 
   plyr@3.7.8:
     dependencies:
